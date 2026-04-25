@@ -15,6 +15,13 @@
       "when": 1777105312005,
       "tag": "0001_amazing_venus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1777121898074,
+      "tag": "0002_curious_brood",
+      "breakpoints": true
     }
   ]
 }

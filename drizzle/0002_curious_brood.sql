@@ -1,0 +1,1 @@
+ALTER TABLE `matches` MODIFY COLUMN `category` enum('euro_league','cup','uefa','national_team') NOT NULL;

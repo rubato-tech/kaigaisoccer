@@ -37,8 +37,8 @@ export const matches = mysqlTable(
   {
     /** TheSportsDB の idEvent をそのままPKとして利用 */
     eventId: varchar("eventId", { length: 32 }).primaryKey(),
-    /** 内部カテゴリ: euro_league(欧州主要リーグ), uefa(CL/EL/ECL), national_team(代表戦) */
-    category: mysqlEnum("category", ["euro_league", "uefa", "national_team"]).notNull(),
+    /** 内部カテゴリ: euro_league(欧州主要リーグ), cup(各国カップ戦), uefa(CL/EL/ECL), national_team(代表戦) */
+    category: mysqlEnum("category", ["euro_league", "cup", "uefa", "national_team"]).notNull(),
     /** TheSportsDB の idLeague */
     leagueId: varchar("leagueId", { length: 16 }).notNull(),
     /** リーグ表示名（日本語） */
