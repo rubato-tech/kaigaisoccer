@@ -117,7 +117,7 @@ export function MatchScheduleTable({ matches, showScore, emptyText }: Props) {
                         {match.homeTeamBadge && (
                           <img
                             src={match.homeTeamBadge}
-                            alt=""
+                            alt={`${homeJp}のエンブレム`}
                             loading="lazy"
                             className="h-6 w-6 shrink-0 rounded-sm bg-white object-contain ring-1 ring-border/50 sm:h-7 sm:w-7"
                           />
@@ -142,7 +142,7 @@ export function MatchScheduleTable({ matches, showScore, emptyText }: Props) {
                         {match.awayTeamBadge && (
                           <img
                             src={match.awayTeamBadge}
-                            alt=""
+                            alt={`${awayJp}のエンブレム`}
                             loading="lazy"
                             className="h-6 w-6 shrink-0 rounded-sm bg-white object-contain ring-1 ring-border/50 sm:h-7 sm:w-7"
                           />
