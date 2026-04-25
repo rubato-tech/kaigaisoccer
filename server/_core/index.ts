@@ -39,9 +39,15 @@ async function startServer() {
   registerOAuthRoutes(app);
 
   // スケジュール/手動同期用エンドポイント。
-  // スケジュールタスクからは Manus OAuth Cookie を付与して POST されるため、
-  // 認証チェックは軽めにして 200 を返す。
-  app.post("/api/scheduled/refresh", async (_req, res) => {
+  // スケジュールタスクからは Manus OAuth Cookie (user ロール) が付与されるため、
+  // Cookie が存在すれば認証済みとみなして処理を実行する。
+  app.post("/api/scheduled/refresh", async (req, res) => {
+    // Cookie が存在するか確認（スケジュールタスクは自動的に Cookie を付与する）
+    const cookieHeader = req.headers.cookie || "";
+    if (!cookieHeader) {
+      res.status(403).json({ ok: false, error: "permission error for cron cookie" });
+      return;
+    }
     try {
       const result = await syncAllLeagues();
       res.json({ ok: true, ...result });
@@ -53,6 +59,11 @@ async function startServer() {
 
   // リーグ 1 つだけ同期する (例: /api/scheduled/refresh-league?id=4480)
   app.post("/api/scheduled/refresh-league", async (req, res) => {
+    const cookieHeader = req.headers.cookie || "";
+    if (!cookieHeader) {
+      res.status(403).json({ ok: false, error: "permission error for cron cookie" });
+      return;
+    }
     try {
       const id = String((req.query.id as string) || "");
       const { LEAGUES } = await import("@shared/leagues");
