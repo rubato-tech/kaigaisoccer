@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `sync_log` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `source` varchar(64) NOT NULL,\n  `status` varchar(32) NOT NULL,\n  `fetchedCount` int NOT NULL DEFAULT 0,\n  `upsertedCount` int NOT NULL DEFAULT 0,\n  `message` text,\n  `startedAt` timestamp NOT NULL DEFAULT (now()),\n  `finishedAt` timestamp,\n  CONSTRAINT `sync_log_id` PRIMARY KEY(`id`)\n);\nCREATE INDEX `idx_matches_kickoff` ON `matches` (`kickoffUtcMs`);\nCREATE INDEX `idx_matches_category` ON `matches` (`category`,`kickoffUtcMs`);\nCREATE INDEX `idx_matches_league` ON `matches` (`leagueId`,`kickoffUtcMs`);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute CREATE TABLE `sync_log` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `source` varchar(64) NOT NULL,\n  `status` varchar(32) NOT NULL,\n  `fetchedCount` int NOT NULL DEFAULT 0,\n  `upsertedCount` int NOT NULL DEFAULT 0,\n  `message` text,\n  `startedAt` timestamp NOT NULL DEFAULT (now()),\n  `finishedAt` timestamp,\n  CONSTRAINT `sync_log_id` PRIMARY KEY(`id`)\n);\nCREATE INDEX `idx_matches_kickoff` ON `matches` (`kickoffUtcMs`);\nCREATE INDEX `idx_matches_category` ON `matches` (`category`,`kickoffUtcMs`);\nCREATE INDEX `idx_matches_league` ON `matches` (`leagueId`,`kickoffUtcMs`);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 3038
+}

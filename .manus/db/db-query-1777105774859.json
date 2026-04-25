@@ -1,0 +1,80 @@
+{
+  "query": "SELECT eventId, leagueNameJp, homeTeam, awayTeam, kickoffUtcMs FROM matches LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT eventId, leagueNameJp, homeTeam, awayTeam, kickoffUtcMs FROM matches LIMIT 10;",
+  "rows": [
+    {
+      "eventId": "2274715",
+      "leagueNameJp": "親善試合/その他",
+      "homeTeam": "Stevenage",
+      "awayTeam": "Barnsley",
+      "kickoffUtcMs": "1776797100000"
+    },
+    {
+      "eventId": "2275064",
+      "leagueNameJp": "親善試合/その他",
+      "homeTeam": "Stockport County",
+      "awayTeam": "Mansfield Town",
+      "kickoffUtcMs": "1776797100000"
+    },
+    {
+      "eventId": "2275104",
+      "leagueNameJp": "親善試合/その他",
+      "homeTeam": "Bradford City",
+      "awayTeam": "Plymouth Argyle",
+      "kickoffUtcMs": "1776797100000"
+    },
+    {
+      "eventId": "2275105",
+      "leagueNameJp": "親善試合/その他",
+      "homeTeam": "Doncaster Rovers",
+      "awayTeam": "Lincoln City",
+      "kickoffUtcMs": "1776797100000"
+    },
+    {
+      "eventId": "2275107",
+      "leagueNameJp": "親善試合/その他",
+      "homeTeam": "Northampton Town",
+      "awayTeam": "Barnsley",
+      "kickoffUtcMs": "1777401900000"
+    },
+    {
+      "eventId": "2275108",
+      "leagueNameJp": "親善試合/その他",
+      "homeTeam": "Peterborough United",
+      "awayTeam": "Mansfield Town",
+      "kickoffUtcMs": "1777401900000"
+    },
+    {
+      "eventId": "2275110",
+      "leagueNameJp": "親善試合/その他",
+      "homeTeam": "Rotherham United",
+      "awayTeam": "Luton Town",
+      "kickoffUtcMs": "1776797100000"
+    },
+    {
+      "eventId": "2275125",
+      "leagueNameJp": "親善試合/その他",
+      "homeTeam": "Cardiff City",
+      "awayTeam": "Port Vale",
+      "kickoffUtcMs": "1776883500000"
+    },
+    {
+      "eventId": "2275147",
+      "leagueNameJp": "親善試合/その他",
+      "homeTeam": "Stockport County",
+      "awayTeam": "Port Vale",
+      "kickoffUtcMs": "1777401900000"
+    },
+    {
+      "eventId": "2275153",
+      "leagueNameJp": "親善試合/その他",
+      "homeTeam": "Exeter City",
+      "awayTeam": "Stockport County",
+      "kickoffUtcMs": "1776520800000"
+    }
+  ],
+  "messages": [],
+  "stdout": "eventId\tleagueNameJp\thomeTeam\tawayTeam\tkickoffUtcMs\n2274715\t親善試合/その他\tStevenage\tBarnsley\t1776797100000\n2275064\t親善試合/その他\tStockport County\tMansfield Town\t1776797100000\n2275104\t親善試合/その他\tBradford City\tPlymouth Argyle\t1776797100000\n2275105\t親善試合/その他\tDoncaster Rovers\tLincoln City\t1776797100000\n2275107\t親善試合/その他\tNorthampton Town\tBarnsley\t1777401900000\n2275108\t親善試合/その他\tPeterborough United\tMansfield Town\t1777401900000\n2275110\t親善試合/その他\tRotherham United\tLuton Town\t1776797100000\n2275125\t親善試合/その他\tCardiff City\tPort Vale\t1776883500000\n2275147\t親善試合/その他\tStockport County\tPort Vale\t1777401900000\n2275153\t親善試合/その他\tExeter City\tStockport County\t1776520800000\n",
+  "stderr": "",
+  "execution_time_ms": 1542
+}

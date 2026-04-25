@@ -1,0 +1,13 @@
+{
+  "query": "SELECT COUNT(*) AS n FROM matches WHERE tags LIKE '%japanese_player%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT COUNT(*) AS n FROM matches WHERE tags LIKE '%japanese_player%';",
+  "rows": [
+    {
+      "n": "535"
+    }
+  ],
+  "messages": [],
+  "stdout": "n\n535\n",
+  "stderr": "",
+  "execution_time_ms": 1607
+}

@@ -1,0 +1,17 @@
+{
+  "query": "SELECT category, leagueNameJp, COUNT(*) AS n, MIN(kickoffUtcMs) AS minMs, MAX(kickoffUtcMs) AS maxMs FROM matches GROUP BY category, leagueNameJp ORDER BY category, leagueNameJp;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT category, leagueNameJp, COUNT(*) AS n, MIN(kickoffUtcMs) AS minMs, MAX(kickoffUtcMs) AS maxMs FROM matches GROUP BY category, leagueNameJp ORDER BY category, leagueNameJp;",
+  "rows": [
+    {
+      "category": "national_team",
+      "leagueNameJp": "親善試合/その他",
+      "n": "30",
+      "minMs": "1776520800000",
+      "maxMs": "1777401900000"
+    }
+  ],
+  "messages": [],
+  "stdout": "category\tleagueNameJp\tn\tminMs\tmaxMs\nnational_team\t親善試合/その他\t30\t1776520800000\t1777401900000\n",
+  "stderr": "",
+  "execution_time_ms": 1735
+}

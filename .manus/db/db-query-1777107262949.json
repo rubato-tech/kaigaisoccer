@@ -1,0 +1,45 @@
+{
+  "query": "SELECT category, leagueNameJp, COUNT(*) AS n FROM matches GROUP BY category, leagueNameJp ORDER BY category, n DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT category, leagueNameJp, COUNT(*) AS n FROM matches GROUP BY category, leagueNameJp ORDER BY category, n DESC;",
+  "rows": [
+    {
+      "category": "euro_league",
+      "leagueNameJp": "リーガ",
+      "n": "380"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "セリエA",
+      "n": "380"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "プレミアリーグ",
+      "n": "380"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "ブンデスリーガ",
+      "n": "306"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "エールディビジ",
+      "n": "306"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "リーグアン",
+      "n": "246"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "ポルトガル",
+      "n": "171"
+    }
+  ],
+  "messages": [],
+  "stdout": "category\tleagueNameJp\tn\neuro_league\tリーガ\t380\neuro_league\tセリエA\t380\neuro_league\tプレミアリーグ\t380\neuro_league\tブンデスリーガ\t306\neuro_league\tエールディビジ\t306\neuro_league\tリーグアン\t246\neuro_league\tポルトガル\t171\n",
+  "stderr": "",
+  "execution_time_ms": 2240
+}

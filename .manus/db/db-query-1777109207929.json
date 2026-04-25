@@ -1,0 +1,105 @@
+{
+  "query": "SELECT category, leagueNameJp, COUNT(*) AS n FROM matches GROUP BY category, leagueNameJp ORDER BY category, n DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT category, leagueNameJp, COUNT(*) AS n FROM matches GROUP BY category, leagueNameJp ORDER BY category, n DESC;",
+  "rows": [
+    {
+      "category": "euro_league",
+      "leagueNameJp": "リーガ",
+      "n": "380"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "セリエA",
+      "n": "380"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "プレミアリーグ",
+      "n": "380"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "エールディビジ",
+      "n": "306"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "ブンデスリーガ",
+      "n": "306"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "トルコ",
+      "n": "297"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "ポルトガル",
+      "n": "288"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "リーグアン",
+      "n": "246"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "ベルギー",
+      "n": "232"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "スイス",
+      "n": "174"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "オーストリア",
+      "n": "174"
+    },
+    {
+      "category": "euro_league",
+      "leagueNameJp": "スコットランド",
+      "n": "174"
+    },
+    {
+      "category": "uefa",
+      "leagueNameJp": "CL",
+      "n": "156"
+    },
+    {
+      "category": "uefa",
+      "leagueNameJp": "EL",
+      "n": "156"
+    },
+    {
+      "category": "uefa",
+      "leagueNameJp": "ECL",
+      "n": "120"
+    },
+    {
+      "category": "national_team",
+      "leagueNameJp": "ネーションズリーグ",
+      "n": "126"
+    },
+    {
+      "category": "national_team",
+      "leagueNameJp": "W杯予選",
+      "n": "72"
+    },
+    {
+      "category": "national_team",
+      "leagueNameJp": "親善試合/その他",
+      "n": "60"
+    },
+    {
+      "category": "national_team",
+      "leagueNameJp": "EURO",
+      "n": "36"
+    }
+  ],
+  "messages": [],
+  "stdout": "category\tleagueNameJp\tn\neuro_league\tリーガ\t380\neuro_league\tセリエA\t380\neuro_league\tプレミアリーグ\t380\neuro_league\tエールディビジ\t306\neuro_league\tブンデスリーガ\t306\neuro_league\tトルコ\t297\neuro_league\tポルトガル\t288\neuro_league\tリーグアン\t246\neuro_league\tベルギー\t232\neuro_league\tスイス\t174\neuro_league\tオーストリア\t174\neuro_league\tスコットランド\t174\nuefa\tCL\t156\nuefa\tEL\t156\nuefa\tECL\t120\nnational_team\tネーションズリーグ\t126\nnational_team\tW杯予選\t72\nnational_team\t親善試合/その他\t60\nnational_team\tEURO\t36\n",
+  "stderr": "",
+  "execution_time_ms": 1563
+}

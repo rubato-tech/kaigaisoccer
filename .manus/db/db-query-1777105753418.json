@@ -1,0 +1,14 @@
+{
+  "query": "SELECT category, COUNT(*) AS n FROM matches GROUP BY category;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT category, COUNT(*) AS n FROM matches GROUP BY category;",
+  "rows": [
+    {
+      "category": "national_team",
+      "n": "30"
+    }
+  ],
+  "messages": [],
+  "stdout": "category\tn\nnational_team\t30\n",
+  "stderr": "",
+  "execution_time_ms": 1720
+}

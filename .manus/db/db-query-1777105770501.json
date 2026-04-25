@@ -1,0 +1,20 @@
+{
+  "query": "SELECT * FROM sync_log ORDER BY id DESC LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT * FROM sync_log ORDER BY id DESC LIMIT 1;",
+  "rows": [
+    {
+      "id": "1",
+      "source": "thesportsdb",
+      "status": "running",
+      "fetchedCount": "0",
+      "upsertedCount": "0",
+      "message": "NULL",
+      "startedAt": "2026-04-25 08:25:26",
+      "finishedAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsource\tstatus\tfetchedCount\tupsertedCount\tmessage\tstartedAt\tfinishedAt\n1\tthesportsdb\trunning\t0\t0\tNULL\t2026-04-25 08:25:26\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1528
+}

@@ -1,6 +1,7 @@
-import { eq } from "drizzle-orm";
+import { and, asc, between, desc, eq, like, lt, gte, lte, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, matches, syncLog, users } from "../drizzle/schema";
+import type { Match } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +90,52 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ---------- 試合データクエリ ----------
+
+export interface MatchListParams {
+  category: "euro_league" | "uefa" | "national_team" | "japanese_player";
+  /** scope: upcoming = 直近, past = 終了済み */
+  scope: "upcoming" | "past";
+  /** UTC ms。指定なしならサーバー現在時刻 */
+  nowUtcMs?: number;
+  limit?: number;
+}
+
+export async function listMatches(params: MatchListParams): Promise<Match[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const now = params.nowUtcMs ?? Date.now();
+  // 直近未来は今後14日間, 過去は直近21日間を取得
+  const FUTURE_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+  const PAST_WINDOW_MS = 21 * 24 * 60 * 60 * 1000;
+  const limit = params.limit ?? 1000;
+
+  // category 条件
+  let categoryCondition;
+  if (params.category === "japanese_player") {
+    categoryCondition = like(matches.tags, "%japanese_player%");
+  } else {
+    categoryCondition = eq(matches.category, params.category);
+  }
+
+  // 時刻範囲
+  const timeCondition =
+    params.scope === "upcoming"
+      ? and(gte(matches.kickoffUtcMs, now - 4 * 60 * 60 * 1000), lte(matches.kickoffUtcMs, now + FUTURE_WINDOW_MS))
+      : and(gte(matches.kickoffUtcMs, now - PAST_WINDOW_MS), lt(matches.kickoffUtcMs, now - 4 * 60 * 60 * 1000));
+
+  const where = and(categoryCondition, timeCondition);
+  const orderCol =
+    params.scope === "upcoming" ? asc(matches.kickoffUtcMs) : desc(matches.kickoffUtcMs);
+
+  const rows = await db.select().from(matches).where(where).orderBy(orderCol).limit(limit);
+  return rows;
+}
+
+export async function getLatestSyncInfo() {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(syncLog).orderBy(desc(syncLog.id)).limit(1);
+  return rows[0] ?? null;
+}
