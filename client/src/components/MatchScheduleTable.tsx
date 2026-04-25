@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { CalendarX2, MapPin } from "lucide-react";
 import type { Match } from "../../../drizzle/schema";
 import { toJstDisplay } from "@shared/datetime";
+import { teamNameJp, leagueDisplayJp } from "@shared/teamNames";
 
 interface Props {
   matches: Match[];
@@ -69,101 +70,100 @@ export function MatchScheduleTable({ matches, showScore, emptyText }: Props) {
           </h2>
 
           <div className="overflow-hidden rounded-xl border border-border/80 bg-card shadow-sm">
-            <table className="w-full border-collapse text-sm">
-              <thead className="bg-secondary/60 text-xs uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="w-[88px] px-3 py-2 text-left font-medium">時刻</th>
-                  <th className="px-3 py-2 text-left font-medium">ホーム</th>
-                  <th className="w-[120px] px-3 py-2 text-center font-medium">
-                    {showScore ? "結果" : "vs"}
-                  </th>
-                  <th className="px-3 py-2 text-left font-medium">アウェー</th>
-                  <th className="hidden w-[160px] px-3 py-2 text-left font-medium md:table-cell">
-                    リーグ
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {g.rows.map(({ match, displayTime, isLateNight }) => {
-                  const statusLabel = STATUS_LABEL[match.status] ?? match.status;
-                  const isPostponed = match.status === "postponed" || match.status === "cancelled";
-                  return (
-                    <tr
-                      key={match.eventId}
-                      className="match-row border-t border-border/60 align-middle"
-                    >
-                      <td className="px-3 py-3 align-middle">
-                        <div
-                          className={`font-mono text-base font-semibold tabular-nums ${
+            <ul className="divide-y divide-border/60">
+              {g.rows.map(({ match, displayTime, isLateNight }) => {
+                const statusLabel = STATUS_LABEL[match.status] ?? match.status;
+                const isPostponed = match.status === "postponed" || match.status === "cancelled";
+                const homeJp = teamNameJp(match.homeTeam);
+                const awayJp = teamNameJp(match.awayTeam);
+                const leagueDisp = leagueDisplayJp(match.leagueNameJp);
+                return (
+                  <li key={match.eventId} className="match-row p-3 sm:p-4">
+                    {/* リーグ行（常時表示） */}
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <span className="league-pill inline-flex max-w-full items-center truncate rounded-full bg-secondary px-2.5 py-0.5 text-[11px] font-semibold text-secondary-foreground">
+                        {leagueDisp}
+                      </span>
+                      {match.venue && (
+                        <span className="hidden items-center gap-1 truncate text-[11px] text-muted-foreground sm:inline-flex">
+                          <MapPin className="h-3 w-3 shrink-0" />
+                          <span className="truncate">{match.venue}</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {/* メイン行：時刻 / ホーム / vs or スコア / アウェー */}
+                    <div className="grid grid-cols-[64px_minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[80px_minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-4">
+                      {/* 時刻 */}
+                      <div className="flex flex-col">
+                        <span
+                          className={`font-mono text-base font-bold tabular-nums leading-none sm:text-lg ${
                             isLateNight ? "text-accent" : "text-foreground"
                           }`}
                           title={isLateNight ? "深夜キックオフ（24時超え表記）" : undefined}
                         >
                           {displayTime}
-                        </div>
-                        <div className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                        </span>
+                        <span className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
                           {isPostponed ? statusLabel : isLateNight ? "深夜" : statusLabel}
-                        </div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="flex items-center gap-2">
-                          {match.homeTeamBadge && (
-                            <img
-                              src={match.homeTeamBadge}
-                              alt=""
-                              loading="lazy"
-                              className="h-6 w-6 rounded-sm bg-white object-contain ring-1 ring-border/50"
-                            />
-                          )}
-                          <span className="font-medium leading-tight text-foreground">
-                            {match.homeTeam}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-3 py-3 text-center">
+                        </span>
+                      </div>
+
+                      {/* ホーム */}
+                      <div className="flex min-w-0 items-center justify-end gap-2 text-right">
+                        <span className="truncate font-medium leading-tight text-foreground">
+                          {homeJp}
+                        </span>
+                        {match.homeTeamBadge && (
+                          <img
+                            src={match.homeTeamBadge}
+                            alt=""
+                            loading="lazy"
+                            className="h-6 w-6 shrink-0 rounded-sm bg-white object-contain ring-1 ring-border/50 sm:h-7 sm:w-7"
+                          />
+                        )}
+                      </div>
+
+                      {/* スコア or vs */}
+                      <div className="flex shrink-0 items-center justify-center px-1 text-center sm:px-2">
                         {showScore && match.homeScore != null && match.awayScore != null ? (
-                          <span className="font-mono text-base font-bold tabular-nums text-foreground">
-                            {match.homeScore} – {match.awayScore}
+                          <span className="rounded-md bg-secondary/70 px-2 py-1 font-mono text-sm font-bold tabular-nums text-foreground sm:text-base">
+                            {match.homeScore} - {match.awayScore}
                           </span>
                         ) : isPostponed ? (
-                          <span className="text-xs text-muted-foreground">{statusLabel}</span>
+                          <span className="text-[11px] text-muted-foreground">{statusLabel}</span>
                         ) : (
-                          <span className="text-xs text-muted-foreground">vs</span>
+                          <span className="text-xs font-medium text-muted-foreground">vs</span>
                         )}
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="flex items-center gap-2">
-                          {match.awayTeamBadge && (
-                            <img
-                              src={match.awayTeamBadge}
-                              alt=""
-                              loading="lazy"
-                              className="h-6 w-6 rounded-sm bg-white object-contain ring-1 ring-border/50"
-                            />
-                          )}
-                          <span className="font-medium leading-tight text-foreground">
-                            {match.awayTeam}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="hidden px-3 py-3 md:table-cell">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="league-pill inline-flex w-fit items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
-                            {match.leagueNameJp}
-                          </span>
-                          {match.venue && (
-                            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                              <MapPin className="h-3 w-3" />
-                              {match.venue}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      </div>
+
+                      {/* アウェー */}
+                      <div className="flex min-w-0 items-center gap-2">
+                        {match.awayTeamBadge && (
+                          <img
+                            src={match.awayTeamBadge}
+                            alt=""
+                            loading="lazy"
+                            className="h-6 w-6 shrink-0 rounded-sm bg-white object-contain ring-1 ring-border/50 sm:h-7 sm:w-7"
+                          />
+                        )}
+                        <span className="truncate font-medium leading-tight text-foreground">
+                          {awayJp}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* モバイル時のスタジアム名（補助情報） */}
+                    {match.venue && (
+                      <div className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground sm:hidden">
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{match.venue}</span>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </section>
       ))}

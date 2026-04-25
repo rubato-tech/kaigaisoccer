@@ -5,8 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MatchScheduleTable } from "@/components/MatchScheduleTable";
-import { LEAGUES } from "@shared/leagues";
+import { MatchFilters, EMPTY_FILTER, type FilterState } from "@/components/MatchFilters";
+import { LEAGUES, LEAGUE_BY_ID } from "@shared/leagues";
 import { toJstParts } from "@shared/datetime";
+import { applyMatchFilter } from "@shared/matchFilter";
+import { leagueDisplayJp } from "@shared/teamNames";
 
 type ViewKey = "euro_upcoming" | "euro_past" | "japanese_upcoming" | "national_upcoming";
 
@@ -82,6 +85,7 @@ function formatRelative(d: Date | null | undefined): string {
 
 export default function Home() {
   const [view, setView] = useState<ViewKey>("euro_upcoming");
+  const [filter, setFilter] = useState<FilterState>(EMPTY_FILTER);
   const spec = VIEWS[view];
 
   const { data, error, isLoading, isFetching, refetch } = trpc.matches.list.useQuery(
@@ -104,6 +108,22 @@ export default function Home() {
     if (spec.includeUefa && uefaData?.matches) list.push(...uefaData.matches);
     return list;
   }, [data?.matches, uefaData?.matches, spec.includeUefa]);
+
+  // 現在のビューに含まれているリーグ一覧（フィルタチップ用）
+  const availableLeagues = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const m of merged) {
+      counts.set(m.leagueId, (counts.get(m.leagueId) ?? 0) + 1);
+    }
+    return Array.from(counts.entries()).map(([id, count]) => {
+      const def = LEAGUE_BY_ID.get(id);
+      const label = def ? leagueDisplayJp(def.nameJp) : id;
+      return { id, label, count };
+    });
+  }, [merged]);
+
+  // フィルタ適用後
+  const filtered = useMemo(() => applyMatchFilter(merged, filter), [merged, filter]);
 
   const lastSync = data?.lastSync?.finishedAt ? new Date(data.lastSync.finishedAt) : null;
 
@@ -166,7 +186,11 @@ export default function Home() {
                   isLoading={isLoading}
                   error={queryError}
                   onRetry={() => refetch()}
-                  matches={merged}
+                  matches={filtered}
+                  totalMatches={merged.length}
+                  filter={filter}
+                  onFilterChange={setFilter}
+                  availableLeagues={availableLeagues}
                   showScore={spec.showScore}
                   emptyText={spec.emptyText}
                 />
@@ -218,14 +242,32 @@ function ViewSection(props: {
   error: { message?: string } | null;
   onRetry: () => void;
   matches: import("../../../drizzle/schema").Match[];
+  totalMatches: number;
+  filter: FilterState;
+  onFilterChange: (f: FilterState) => void;
+  availableLeagues: { id: string; label: string; count: number }[];
   showScore: boolean;
   emptyText: string;
 }) {
-  const { title, description, isLoading, error, onRetry, matches, showScore, emptyText } = props;
+  const {
+    title,
+    description,
+    isLoading,
+    error,
+    onRetry,
+    matches,
+    totalMatches,
+    filter,
+    onFilterChange,
+    availableLeagues,
+    showScore,
+    emptyText,
+  } = props;
   const leagueCount = useMemo(() => {
     const set = new Set(matches.map((m) => m.leagueId));
     return set.size;
   }, [matches]);
+  const isFiltered = filter.selectedLeagueIds.size > 0 || filter.teamQuery.trim() !== "";
   return (
     <div>
       <div className="mb-5 flex items-baseline justify-between gap-4 border-b border-border/60 pb-3">
@@ -238,6 +280,9 @@ function ViewSection(props: {
             <span className="font-mono text-base font-bold tabular-nums text-foreground">
               {matches.length}
             </span>
+            {isFiltered && (
+              <span className="ml-1 text-muted-foreground">/ {totalMatches}</span>
+            )}
             <span className="ml-1">試合</span>
           </div>
           <div>
@@ -248,6 +293,12 @@ function ViewSection(props: {
           </div>
         </div>
       </div>
+
+      <MatchFilters
+        state={filter}
+        onChange={onFilterChange}
+        availableLeagues={availableLeagues}
+      />
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20 text-muted-foreground" role="status">
@@ -283,7 +334,7 @@ function SiteFooter() {
         試合データ: TheSportsDB ・ 時刻はすべて日本時間（JST）
       </p>
       <p className="mt-2 text-[11px]">
-        対応リーグ: {LEAGUES.filter((l) => l.category !== "national_team").map((l) => l.nameJp).join("、")}
+        対応リーグ: {LEAGUES.filter((l) => l.category !== "national_team").map((l) => leagueDisplayJp(l.nameJp)).join("、")}
       </p>
     </footer>
   );
