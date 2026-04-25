@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { CalendarDays, Globe2, Loader2, Newspaper, RefreshCw, Trophy, UserRound } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MatchScheduleTable } from "@/components/MatchScheduleTable";
@@ -138,28 +137,42 @@ export default function Home() {
     <div className="min-h-screen">
       <SiteHeader todayLabel={todayLabel} />
 
-      <main className="container py-6 md:py-10">
-        <Tabs value={view} onValueChange={(v) => setView(v as ViewKey)} className="w-full">
-          <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <TabsList className="h-auto flex-wrap justify-start gap-1 rounded-xl bg-secondary/70 p-1">
+      {/* タブナビゲーション：スマホでは横スクロール、PCでは全表示 */}
+      <div className="sticky top-0 z-20 border-b border-border/70 bg-card/95 backdrop-blur">
+        <div className="container">
+          <div className="flex items-center justify-between gap-2">
+            {/* タブ一覧：overflow-x-auto で横スクロール可能 */}
+            <div
+              className="-mb-px flex flex-1 overflow-x-auto"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
               {(Object.keys(VIEWS) as ViewKey[]).map((key) => {
                 const v = VIEWS[key];
                 const Icon = v.icon;
+                const isActive = view === key;
                 return (
-                  <TabsTrigger
+                  <button
                     key={key}
-                    value={key}
-                    className="flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                    onClick={() => setView(key)}
+                    className={[
+                      "flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-3.5 text-sm font-semibold transition-colors sm:px-4",
+                      isActive
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
+                    ].join(" ")}
+                    aria-selected={isActive}
+                    role="tab"
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-4 w-4 shrink-0" />
                     <span>{v.label}</span>
-                  </TabsTrigger>
+                  </button>
                 );
               })}
-            </TabsList>
+            </div>
 
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="hidden sm:inline">最終更新:&nbsp;{formatRelative(lastSync)}</span>
+            {/* 再読み込みボタン */}
+            <div className="flex shrink-0 items-center gap-2 pl-2">
+              <span className="hidden text-xs text-muted-foreground sm:inline">最終更新:&nbsp;{formatRelative(lastSync)}</span>
               <Button
                 variant="outline"
                 size="sm"
@@ -172,32 +185,30 @@ export default function Home() {
                 ) : (
                   <RefreshCw className="h-3.5 w-3.5" />
                 )}
-                <span className="ml-1">再読み込み</span>
+                <span className="ml-1 hidden xs:inline">再読み込み</span>
               </Button>
             </div>
           </div>
+        </div>
+      </div>
 
-          {(Object.keys(VIEWS) as ViewKey[]).map((key) => (
-            <TabsContent key={key} value={key} className="mt-0 focus-visible:outline-none">
-              {key === view && (
-                <ViewSection
-                  title={spec.label}
-                  description={spec.description}
-                  isLoading={isLoading}
-                  error={queryError}
-                  onRetry={() => refetch()}
-                  matches={filtered}
-                  totalMatches={merged.length}
-                  filter={filter}
-                  onFilterChange={setFilter}
-                  availableLeagues={availableLeagues}
-                  showScore={spec.showScore}
-                  emptyText={spec.emptyText}
-                />
-              )}
-            </TabsContent>
-          ))}
-        </Tabs>
+      <main className="container py-6 md:py-10">
+        <div role="tabpanel">
+          <ViewSection
+            title={spec.label}
+            description={spec.description}
+            isLoading={isLoading}
+            error={queryError}
+            onRetry={() => refetch()}
+            matches={filtered}
+            totalMatches={merged.length}
+            filter={filter}
+            onFilterChange={setFilter}
+            availableLeagues={availableLeagues}
+            showScore={spec.showScore}
+            emptyText={spec.emptyText}
+          />
+        </div>
 
         <SiteFooter />
       </main>
