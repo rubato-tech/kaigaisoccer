@@ -15,6 +15,7 @@
     <meta property="og:description" content="欧州主要リーグとUEFA3大会、代表戦、日本人選手出場試合のキックオフを日本時間で一覧表示。リーグ・チーム検索に対応。" />
     <meta property="og:locale" content="ja_JP" />
     <meta name="twitter:card" content="summary" />
+    <!-- 外部サーバー運用時はドメインに合わせて変更すること -->
     <link rel="canonical" href="https://kaigai-soccer.manus.space/" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -28,6 +29,18 @@
       defer
       src="%VITE_ANALYTICS_ENDPOINT%/umami"
       data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+
+    <!-- ============================================================
+         Google AdSense 追加手順（審査通過後にコメントアウトを解除）
+         1. https://www.google.com/adsense/ でアカウント作成
+         2. サイトを登録し審査申請
+         3. 承認後、下記の ca-pub-XXXXXXXXXXXXXXXXX を実際の値に変更
+         4. 環境変数 VITE_ADSENSE_CLIENT も同じ値に設定
+         ============================================================ -->
+    <!--
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXXX"
+         crossorigin="anonymous"></script>
+    -->
   </body>
 
 </html>

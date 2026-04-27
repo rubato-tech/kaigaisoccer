@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { CalendarDays, Globe2, Loader2, Newspaper, RefreshCw, Trophy, UserRound } from "lucide-react";
+import { AdBanner } from "@/components/AdBanner";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -192,6 +193,11 @@ export default function Home() {
         </div>
       </div>
 
+      {/* ヘッダー下 横長バナー広告 */}
+      <div className="container py-2">
+        <AdBanner slot="horizontal" />
+      </div>
+
       <main className="container py-6 md:py-10">
         <div role="tabpanel">
           <ViewSection
@@ -208,6 +214,11 @@ export default function Home() {
             showScore={spec.showScore}
             emptyText={spec.emptyText}
           />
+        </div>
+
+        {/* フッター上 横長バナー広告 */}
+        <div className="mt-10">
+          <AdBanner slot="horizontal" />
         </div>
 
         <SiteFooter />

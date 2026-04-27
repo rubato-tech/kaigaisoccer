@@ -27,7 +27,19 @@
 - [x] /api/scheduled/refresh-league エンドポイント（個別）
 - [x] 初期データ投入完了
 - [x] 429レート制限のリトライ（指数バックオフ）
-- [ ] 毎日自動同期スケジュール（プロジェクト公開後、別途schedule登録）
+- [x] 毎日自動同期スケジュール（改修フェーズ3で登録済み：毎週火曜5:00 JSTに自動更新）
+
+## 外部サーバー移行・広告収益化（2026-04-27）
+- [x] Dockerfile（マルチステージビルド）作成
+- [x] docker-compose.yml（MySQL+アプリ）作成
+- [x] railway.json（Railway デプロイ設定）作成
+- [x] render.yaml（Render デプロイ設定）作成
+- [x] env-template.txt（環境変数テンプレート）作成
+- [x] AdBannerコンポーネント作成（横長/レクタングル/インフィード）
+- [x] Home.tsxにヘッダー下・フッター上の広告スロット追加
+- [x] MatchScheduleTableに3日ごとのインフィード広告スロット追加
+- [x] index.htmlにAdSenseスクリプトのコメントアウト済みプレースホルダー追加
+- [x] EXTERNAL_DEPLOY_GUIDE.md（外部サーバー移行・広告収益化手順書）作成
 
 ## 仕上げ
 - [x] vitestテスト追加（JST変換・25時表記・データ取得API）— 全12テスト合格

@@ -3,6 +3,7 @@ import { CalendarX2, MapPin } from "lucide-react";
 import type { Match } from "../../../drizzle/schema";
 import { toJstDisplay } from "@shared/datetime";
 import { teamNameJp, leagueDisplayJp } from "@shared/teamNames";
+import { AdBanner } from "@/components/AdBanner";
 
 interface Props {
   matches: Match[];
@@ -60,8 +61,13 @@ export function MatchScheduleTable({ matches, showScore, emptyText }: Props) {
 
   return (
     <div className="space-y-8">
-      {groups.map((g) => (
-        <section key={g.groupKey} aria-labelledby={`date-${g.groupKey}`}>
+      {groups.map((g, idx) => (
+        <div key={g.groupKey}>
+          {/* 3日ごとにインフィード広告を挿入（最初のグループはスキップ） */}
+          {idx > 0 && idx % 3 === 0 && (
+            <AdBanner slot="infeed" className="mb-6" />
+          )}
+          <section aria-labelledby={`date-${g.groupKey}`}>
           <h2
             id={`date-${g.groupKey}`}
             className="date-header mb-3 px-4 py-2 text-lg font-bold tracking-wide text-primary"
@@ -165,7 +171,8 @@ export function MatchScheduleTable({ matches, showScore, emptyText }: Props) {
               })}
             </ul>
           </div>
-        </section>
+          </section>
+        </div>
       ))}
     </div>
   );

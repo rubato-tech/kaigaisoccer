@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  # ============================================================
+  # MySQL データベース
+  # ============================================================
+  db:
+    image: mysql:8.0
+    container_name: soccer_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-soccer_schedule}
+      MYSQL_USER: ${MYSQL_USER:-soccer_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-soccer_pass}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ============================================================
+  # Web アプリケーション
+  # ============================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: soccer_app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      # MySQL 接続文字列（db サービスのホスト名を使用）
+      DATABASE_URL: mysql://${MYSQL_USER:-soccer_user}:${MYSQL_PASSWORD:-soccer_pass}@db:3306/${MYSQL_DATABASE:-soccer_schedule}
+      # JWT シークレット（必ず変更すること）
+      JWT_SECRET: ${JWT_SECRET:-change_this_secret_in_production}
+      # Manus OAuth（外部サーバーでは不要な場合はダミー値でOK）
+      VITE_APP_ID: ${VITE_APP_ID:-}
+      OAUTH_SERVER_URL: ${OAUTH_SERVER_URL:-}
+      OWNER_OPEN_ID: ${OWNER_OPEN_ID:-}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
+    driver: local

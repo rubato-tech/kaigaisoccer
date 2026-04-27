@@ -1,0 +1,29 @@
+services:
+  # Web サービス（Node.js アプリ）
+  - type: web
+    name: soccer-schedule-jp
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter  # 月額 $7 の最安プラン
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8080
+      - key: DATABASE_URL
+        fromDatabase:
+          name: soccer-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+
+  # MySQL データベース
+  - type: pserv
+    name: soccer-db
+    runtime: docker
+    dockerfilePath: ./Dockerfile.mysql
+    plan: starter
+    disk:
+      name: mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 10
