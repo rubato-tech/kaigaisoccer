@@ -45,6 +45,20 @@ export const LEAGUES: LeagueDef[] = [
   { id: "4337", nameJp: "エールディビジ",       nameEn: "Dutch Eredivisie",            category: "euro_league", priority: 7,  region: "Netherlands", rounds: range(1, 34) },
   { id: "4338", nameJp: "ジュピラー・プロ・リーグ", nameEn: "Belgian Pro League",       category: "euro_league", priority: 8,  region: "Belgium",     rounds: range(1, 34) },
   { id: "4344", nameJp: "プリメイラ・リーガ",   nameEn: "Portuguese Primeira Liga",    category: "euro_league", priority: 9,  region: "Portugal",    rounds: range(1, 34) },
+  // ===== 日本人選手所属リーグ（追加分） =====
+  { id: "4339", nameJp: "スュペル・リグ",             nameEn: "Turkish Super Lig",           category: "euro_league", priority: 10, region: "Turkey",         rounds: range(1, 34) },
+  { id: "4675", nameJp: "スイス・スーパーリーグ",     nameEn: "Swiss Super League",          category: "euro_league", priority: 11, region: "Switzerland",    rounds: range(1, 36) },
+  { id: "4621", nameJp: "オーストリア・ブンデスリーガ", nameEn: "Austrian Bundesliga",        category: "euro_league", priority: 12, region: "Austria",        rounds: range(1, 36) },
+  { id: "4340", nameJp: "デンマーク・スーパーリーガ", nameEn: "Danish Superliga",            category: "euro_league", priority: 13, region: "Denmark",        rounds: range(1, 32) },
+  { id: "4358", nameJp: "エリテセリエン",             nameEn: "Norwegian Eliteserien",       category: "euro_league", priority: 14, region: "Norway",         rounds: range(1, 30) },
+  { id: "4347", nameJp: "アルスヴェンスカン",         nameEn: "Swedish Allsvenskan",         category: "euro_league", priority: 15, region: "Sweden",         rounds: range(1, 30) },
+  { id: "4422", nameJp: "エクストラクラサ",           nameEn: "Polish Ekstraklasa",          category: "euro_league", priority: 16, region: "Poland",         rounds: range(1, 34) },
+  { id: "4336", nameJp: "スーパーリーグ・ギリシャ",   nameEn: "Greek Superleague",           category: "euro_league", priority: 17, region: "Greece",         rounds: range(1, 34) },
+  { id: "4631", nameJp: "チェコ・フォルトゥナ・リーガ", nameEn: "Czech First League",        category: "euro_league", priority: 18, region: "Czech Republic", rounds: range(1, 34) },
+  { id: "4671", nameJp: "セルビア・スーパーリーガ",   nameEn: "Serbian Super Liga",          category: "euro_league", priority: 19, region: "Serbia",         rounds: range(1, 30) },
+  { id: "4629", nameJp: "クロアチアHNL",              nameEn: "Croatian HNL",                category: "euro_league", priority: 20, region: "Croatia",        rounds: range(1, 36) },
+  { id: "4691", nameJp: "ルーマニア・リーガ1",        nameEn: "Romanian Liga I",             category: "euro_league", priority: 21, region: "Romania",        rounds: range(1, 30) },
+  { id: "4636", nameJp: "ヴェイッカウスリーガ",       nameEn: "Finnish Veikkausliiga",       category: "euro_league", priority: 22, region: "Finland",        rounds: range(1, 26) },
   // ===== 各国カップ戦（5大リーグ） =====
   { id: "4482", nameJp: "FAカップ",             nameEn: "FA Cup",                      category: "cup", priority: 11, region: "England",     rounds: CUP_ROUNDS },
   { id: "4483", nameJp: "コパ・デル・レイ",     nameEn: "Copa del Rey",                category: "cup", priority: 12, region: "Spain",       rounds: CUP_ROUNDS },
@@ -119,4 +133,56 @@ export const JAPANESE_PLAYER_TEAMS: string[] = [
   "Benfica",
   "FC Porto",
   "Braga",
+  // ===== トルコ・スュペル・リグ =====
+  "Trabzonspor",              // 鈴木唯人
+  "Galatasaray",
+  "Fenerbahce",
+  "Besiktas",
+  // ===== スイス・スーパーリーグ =====
+  "FC Zurich",                // 日本人選手所属
+  "Young Boys",
+  "FC Basel",
+  "FC Lugano",
+  // ===== オーストリア・ブンデスリーガ =====
+  "Red Bull Salzburg",        // 日本人選手所属
+  "Rapid Vienna",
+  "LASK",
+  // ===== デンマーク・スーパーリーガ =====
+  "FC Copenhagen",            // 日本人選手所属
+  "Brondby IF",
+  "FC Midtjylland",
+  "AGF Aarhus",
+  // ===== ノルウェー・エリテセリエン =====
+  "Bodo/Glimt",               // 日本人選手所属
+  "Molde",
+  "Rosenborg",
+  // ===== スウェーデン・アルスヴェンスカン =====
+  "Malmo FF",                 // 日本人選手所属
+  "Hammarby",
+  "IFK Gothenburg",
+  // ===== ポーランド・エクストラクラサ =====
+  "Lech Poznan",              // 日本人選手所属
+  "Legia Warsaw",
+  "Rakow Czestochowa",
+  // ===== ギリシャ・スーパーリーグ =====
+  "Olympiacos",               // 日本人選手所属
+  "PAOK",
+  "AEK Athens",
+  "Panathinaikos",
+  // ===== チェコ・フォルトゥナ・リーガ =====
+  "Slavia Prague",            // 日本人選手所属
+  "Sparta Prague",
+  "Viktoria Plzen",
+  // ===== セルビア・スーパーリーガ =====
+  "Crvena Zvezda",            // 日本人選手所属（レッドスター）
+  "Partizan",
+  // ===== クロアチアHNL =====
+  "Dinamo Zagreb",            // 日本人選手所属
+  "Hajduk Split",
+  // ===== ルーマニア・リーガ1 =====
+  "FCSB",                     // 日本人選手所属
+  "CFR Cluj",
+  // ===== フィンランド・ヴェイッカウスリーガ =====
+  "HJK Helsinki",             // 日本人選手所属
+  "SJK Seinajoki",
 ];

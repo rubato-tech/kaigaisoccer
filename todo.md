@@ -131,3 +131,29 @@
 - [x] AdSenseBlock.tsx 作成（VITE_ADSENSE_CLIENT/SLOT環境変数連動）
 - [x] Home.tsxにAdSenseBlockをヘッダー下・フッター上に配置
 - [x] VITE_AFFILIATE_*・VITE_GOOGLE_CLIENT_ID・VITE_ADSENSE_*環境変数の手順書をEXTERNAL_DEPLOY_GUIDE.mdに記載済み
+
+## 日本人選手所属リーグ拡張（2026-05-01）
+
+- [ ] 2025-26シーズンの日本人選手所属リーグを調査（スイス・オーストリア・デンマーク・ノルウェー・スウェーデン・ギリシャ・チェコ・トルコ等）
+- [ ] 現在未対応リーグのTheSportsDB IDを確認
+- [ ] leagues.tsに未対応リーグを追加
+- [ ] JAPANESE_PLAYER_TEAMSを最新の所属クラブで更新
+- [ ] LEAGUE_DISPLAY_JPに新リーグ名を追加
+- [ ] 新リーグのデータ取得・DB同期
+- [ ] 新リーグのチーム名カタカナマッピングを追加
+- [ ] テスト・チェックポイント保存
+
+## 無料運用切替＋リーグ追加（2026-05-01）
+
+- [ ] スイス・スーパーリーグ（TheSportsDB ID確認・追加）
+- [ ] デンマーク・スーパーリーガ（ID: 4340 確認済み・追加）
+- [ ] オーストリア・ブンデスリーガ（TheSportsDB ID確認・追加）
+- [ ] ポーランド・エクストラクラサ（TheSportsDB ID確認・追加）
+- [ ] スウェーデン・アルスヴェンスカン（ID: 4347 確認済み・追加）
+- [ ] ギリシャ・スーパーリーグ（TheSportsDB ID確認・追加）
+- [ ] チェコ・フォルトゥナリーガ（TheSportsDB ID確認・追加）
+- [ ] セルビア・スーパーリーガ（TheSportsDB ID確認・追加）
+- [ ] JAPANESE_PLAYER_TEAMS を新リーグ対応クラブで更新
+- [ ] LEAGUE_DISPLAY_JP に新リーグ名を追加
+- [ ] EXTERNAL_DEPLOY_GUIDE.md から Railway（有料）の記述を全削除し Cloudflare 完全無料構成のみに書き直す
+- [ ] テスト・チェックポイント保存
