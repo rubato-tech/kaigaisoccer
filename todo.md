@@ -130,4 +130,4 @@
 ### 収益化強化
 - [x] AdSenseBlock.tsx 作成（VITE_ADSENSE_CLIENT/SLOT環境変数連動）
 - [x] Home.tsxにAdSenseBlockをヘッダー下・フッター上に配置
-- [ ] VITE_AFFILIATE_*・VITE_GOOGLE_CLIENT_ID・VITE_ADSENSE_*環境変数の手順書を更新
+- [x] VITE_AFFILIATE_*・VITE_GOOGLE_CLIENT_ID・VITE_ADSENSE_*環境変数の手順書をEXTERNAL_DEPLOY_GUIDE.mdに記載済み

@@ -350,10 +350,24 @@ OAUTH_SERVER_URL=https://api.manus.im
 VITE_OAUTH_PORTAL_URL=https://manus.im
 
 # AdSense（審査通過後に設定）
-VITE_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXXX
-VITE_ADSENSE_SLOT_HORIZONTAL=XXXXXXXXXX
-VITE_ADSENSE_SLOT_RECTANGLE=XXXXXXXXXX
-VITE_ADSENSE_SLOT_INFEED=XXXXXXXXXX
+VITE_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXXX   # AdSense 発行者ID
+VITE_ADSENSE_SLOT_TOP=XXXXXXXXXX               # ヘッダー直下スロットID
+VITE_ADSENSE_SLOT_INLINE=XXXXXXXXXX            # フッター上スロットID
+VITE_ADSENSE_SLOT_HORIZONTAL=XXXXXXXXXX        # 横長バナースロットID
+VITE_ADSENSE_SLOT_RECTANGLE=XXXXXXXXXX         # レクタングルスロットID
+VITE_ADSENSE_SLOT_INFEED=XXXXXXXXXX            # インフィードスロットID
+
+# Google Calendar API（任意・設定するとカレンダー直接書き込みが有効化）
+VITE_GOOGLE_CLIENT_ID=XXXXXXXXXX.apps.googleusercontent.com
+# 取得方法: https://console.cloud.google.com/ → 認証情報 → OAuth 2.0 クライアントID
+# 承認済み JavaScript オリジンに https://kaigaisoccer.com を追加
+# 未設定の場合は ICS ダウンロードに自動フォールバック
+
+# アフィリエイト（各サービスの提携リンクを設定）
+VITE_AFFILIATE_DAZN_URL=https://px.a8.net/svt/ejp?a8mat=XXXXXXXXXX  # DAZN A8.net提携リンク
+VITE_AFFILIATE_RAKUTEN_URL=https://hb.afl.rakuten.co.jp/hgc/XXXXXXXXXX  # 楽天グループ提携リンク
+VITE_AFFILIATE_AMAZON_URL=https://www.amazon.co.jp/?tag=XXXXXXXXXX  # Amazonアソシエイト
+VITE_AFFILIATE_CUSTOM_URL=                     # その他カスタムアフィリエイトURL
 
 # オプション
 NODE_ENV=production
