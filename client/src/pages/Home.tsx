@@ -177,7 +177,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <SiteHeader todayLabel={todayLabel} showLocalTime={showLocalTime} />
+      <SiteHeader todayLabel={todayLabel} showLocalTime={showLocalTime} onToggleLocalTime={() => setShowLocalTime((v) => !v)} />
 
       {/* タブナビゲーション */}
       <div className="sticky top-0 z-20 border-b border-border/70 bg-card/95 backdrop-blur">
@@ -289,7 +289,15 @@ export default function Home() {
   );
 }
 
-function SiteHeader({ todayLabel, showLocalTime }: { todayLabel: string; showLocalTime: boolean }) {
+function SiteHeader({
+  todayLabel,
+  showLocalTime,
+  onToggleLocalTime,
+}: {
+  todayLabel: string;
+  showLocalTime: boolean;
+  onToggleLocalTime: () => void;
+}) {
   return (
     <header className="border-b border-border/70 bg-card/80 backdrop-blur">
       <div className="container flex flex-col gap-3 py-4 md:flex-row md:items-end md:justify-between md:py-6">
@@ -306,10 +314,38 @@ function SiteHeader({ todayLabel, showLocalTime }: { todayLabel: string; showLoc
             </p>
           </div>
         </div>
-        <div className="flex flex-col items-start gap-1 md:items-end">
-          <Badge variant="secondary" className="font-mono text-xs">
-            {showLocalTime ? "現地時間表示中" : "JST 基準"}
-          </Badge>
+        <div className="flex flex-col items-start gap-2 md:items-end">
+          {/* 時刻表示セグメントコントロール */}
+          <div
+            className="flex items-center rounded-lg border border-border bg-muted p-1 text-xs font-medium"
+            role="group"
+            aria-label="時刻表示切り替え"
+          >
+            <button
+              type="button"
+              onClick={() => showLocalTime && onToggleLocalTime()}
+              className={`flex items-center gap-1 rounded-md px-3 py-1.5 transition-all ${
+                !showLocalTime
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <span className="font-mono">JST</span>
+              <span className="hidden sm:inline">日本時間</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => !showLocalTime && onToggleLocalTime()}
+              className={`flex items-center gap-1 rounded-md px-3 py-1.5 transition-all ${
+                showLocalTime
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Clock className="h-3 w-3" />
+              <span>現地時間</span>
+            </button>
+          </div>
           <span className="font-serif text-base font-bold text-foreground/80 md:text-lg">
             {todayLabel}
           </span>
@@ -381,22 +417,12 @@ function ViewSection(props: {
           </div>
         </div>
       </div>
-      <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="mb-3">
         <MatchFilters
           state={filter}
           onChange={onFilterChange}
           availableLeagues={availableLeagues}
         />
-        <Button
-          variant="outline"
-          size="sm"
-          className={`shrink-0 gap-1.5 text-xs ${showLocalTime ? "border-primary text-primary" : "text-muted-foreground"}`}
-          onClick={onToggleLocalTime}
-          title={showLocalTime ? "日本時間（JST）に戻す" : "現地時間も表示する"}
-        >
-          <Clock className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">{showLocalTime ? "現地時間表示中" : "現地時間"}</span>
-        </Button>
       </div>
       {isLoading ? (
         <div className="flex items-center justify-center py-20 text-muted-foreground" role="status">

@@ -128,4 +128,13 @@ export const JAPANESE_PLAYER_TEAMS: string[] = [
   "Galatasaray",
   "Fenerbahce",
   "Besiktas",
+  // ===== チャンピオンシップ（イングランド2部）=====
+  "Southampton",           // 松木玖生
+  "Leeds United",          // 田中碧
+  "QPR",                   // 斉藤光毅
+  "Coventry City",         // 坂元達裕
+  "Hull City",             // 平河悠
+  "Blackburn Rovers",      // 大橋祐紀・森下龍矢
+  "Stoke City",            // 瀬古樹
+  "Birmingham City",       // 岩田智輝・古橋亨梧・藤本寛也
 ];
