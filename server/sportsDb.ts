@@ -104,6 +104,34 @@ export async function fetchEventsByRound(
 }
 
 /**
+ * next/past 各15試合から現在のラウンド番号を推定する。
+ * 直近の過去試合の最大ラウンド番号を「現在ラウンド」とみなす。
+ * 取得できない場合は null を返す。
+ */
+export async function fetchCurrentRound(idLeague: string): Promise<number | null> {
+  const [nextRes, pastRes] = await Promise.allSettled([
+    fetchNextLeagueEvents(idLeague),
+    fetchPastLeagueEvents(idLeague),
+  ]);
+  const pastEvents = pastRes.status === "fulfilled" ? pastRes.value : [];
+  const nextEvents = nextRes.status === "fulfilled" ? nextRes.value : [];
+
+  // 過去試合の最大ラウンドを現在ラウンドとする
+  const pastRounds = pastEvents
+    .map((ev) => (ev.intRound ? parseInt(ev.intRound, 10) : NaN))
+    .filter((r) => !isNaN(r));
+  if (pastRounds.length > 0) return Math.max(...pastRounds);
+
+  // fallback: 次の試合の最小ラウンド
+  const nextRounds = nextEvents
+    .map((ev) => (ev.intRound ? parseInt(ev.intRound, 10) : NaN))
+    .filter((r) => !isNaN(r));
+  if (nextRounds.length > 0) return Math.min(...nextRounds);
+
+  return null;
+}
+
+/**
  * イベントの strTimestamp (UTC ISO ライク文字列) を UNIX ミリ秒へ変換する。
  * 取得できない場合は dateEvent + strTime + UTC として解釈する。
  */

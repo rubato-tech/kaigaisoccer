@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { CalendarDays, Globe2, Loader2, Newspaper, RefreshCw, Star, Trophy, UserRound } from "lucide-react";
+import { CalendarDays, Clock, Globe2, Loader2, Newspaper, RefreshCw, Star, Trophy, UserRound } from "lucide-react";
 import { AdBanner } from "@/components/AdBanner";
 import { AdSenseBlock } from "@/components/AdSenseBlock";
 import { FavoriteTeams } from "@/components/FavoriteTeams";
@@ -109,6 +109,7 @@ function formatRelative(d: Date | null | undefined): string {
 export default function Home() {
   const [view, setView] = useState<ViewKey>("euro_upcoming");
   const [filter, setFilter] = useState<FilterState>(EMPTY_FILTER);
+  const [showLocalTime, setShowLocalTime] = useState(false);
   const spec = VIEWS[view];
 
   // 通常タブのデータ取得（favoritesタブ以外）
@@ -176,7 +177,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <SiteHeader todayLabel={todayLabel} />
+      <SiteHeader todayLabel={todayLabel} showLocalTime={showLocalTime} />
 
       {/* タブナビゲーション */}
       <div className="sticky top-0 z-20 border-b border-border/70 bg-card/95 backdrop-blur">
@@ -260,6 +261,8 @@ export default function Home() {
             availableLeagues={availableLeagues}
             showScore={spec.showScore}
             emptyText={spec.emptyText}
+            showLocalTime={showLocalTime}
+            onToggleLocalTime={() => setShowLocalTime((v) => !v)}
           />
         </div>
 
@@ -286,7 +289,7 @@ export default function Home() {
   );
 }
 
-function SiteHeader({ todayLabel }: { todayLabel: string }) {
+function SiteHeader({ todayLabel, showLocalTime }: { todayLabel: string; showLocalTime: boolean }) {
   return (
     <header className="border-b border-border/70 bg-card/80 backdrop-blur">
       <div className="container flex flex-col gap-3 py-4 md:flex-row md:items-end md:justify-between md:py-6">
@@ -305,7 +308,7 @@ function SiteHeader({ todayLabel }: { todayLabel: string }) {
         </div>
         <div className="flex flex-col items-start gap-1 md:items-end">
           <Badge variant="secondary" className="font-mono text-xs">
-            JST 基準
+            {showLocalTime ? "現地時間表示中" : "JST 基準"}
           </Badge>
           <span className="font-serif text-base font-bold text-foreground/80 md:text-lg">
             {todayLabel}
@@ -329,6 +332,8 @@ function ViewSection(props: {
   availableLeagues: { id: string; label: string; count: number }[];
   showScore: boolean;
   emptyText: string;
+  showLocalTime: boolean;
+  onToggleLocalTime: () => void;
 }) {
   const {
     title,
@@ -343,6 +348,8 @@ function ViewSection(props: {
     availableLeagues,
     showScore,
     emptyText,
+    showLocalTime,
+    onToggleLocalTime,
   } = props;
   const leagueCount = useMemo(() => {
     const set = new Set(matches.map((m) => m.leagueId));
@@ -374,11 +381,23 @@ function ViewSection(props: {
           </div>
         </div>
       </div>
-      <MatchFilters
-        state={filter}
-        onChange={onFilterChange}
-        availableLeagues={availableLeagues}
-      />
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <MatchFilters
+          state={filter}
+          onChange={onFilterChange}
+          availableLeagues={availableLeagues}
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          className={`shrink-0 gap-1.5 text-xs ${showLocalTime ? "border-primary text-primary" : "text-muted-foreground"}`}
+          onClick={onToggleLocalTime}
+          title={showLocalTime ? "日本時間（JST）に戻す" : "現地時間も表示する"}
+        >
+          <Clock className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">{showLocalTime ? "現地時間表示中" : "現地時間"}</span>
+        </Button>
+      </div>
       {isLoading ? (
         <div className="flex items-center justify-center py-20 text-muted-foreground" role="status">
           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -399,7 +418,7 @@ function ViewSection(props: {
           </Button>
         </div>
       ) : (
-        <MatchScheduleTable matches={matches} showScore={showScore} emptyText={emptyText} />
+        <MatchScheduleTable matches={matches} showScore={showScore} emptyText={emptyText} showLocalTime={showLocalTime} />
       )}
     </div>
   );

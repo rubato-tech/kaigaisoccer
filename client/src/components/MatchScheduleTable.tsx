@@ -1,12 +1,49 @@
 import { useMemo } from "react";
-import { CalendarX2, CalendarPlus, MapPin } from "lucide-react";
+import { CalendarX2, CalendarPlus, MapPin, Youtube, Clock } from "lucide-react";
 import type { Match } from "../../../drizzle/schema";
 import { toJstDisplay } from "@shared/datetime";
 import { teamNameJp, leagueDisplayJp } from "@shared/teamNames";
+import { LEAGUES } from "@shared/leagues";
 import { AdBanner } from "@/components/AdBanner";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
+/** リーグIDから現地タイムゾーンを返す */
+const REGION_TZ: Record<string, string> = {
+  England: "Europe/London",
+  Scotland: "Europe/London",
+  Spain: "Europe/Madrid",
+  Italy: "Europe/Rome",
+  Germany: "Europe/Berlin",
+  France: "Europe/Paris",
+  Netherlands: "Europe/Amsterdam",
+  Belgium: "Europe/Brussels",
+  Portugal: "Europe/Lisbon",
+  Turkey: "Europe/Istanbul",
+  Europe: "Europe/Paris",
+  World: "UTC",
+};
+function getLeagueTz(leagueId: string): string {
+  const league = LEAGUES.find((l) => l.id === leagueId);
+  const region = league?.region ?? "Europe";
+  return REGION_TZ[region] ?? "Europe/London";
+}
+/** UTC ms を指定タイムゾーンで HH:MM に変換 */
+function toLocalTime(utcMs: number, tz: string): string {
+  return new Date(utcMs).toLocaleTimeString("ja-JP", {
+    timeZone: tz,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+/** 試合ハイライトのYouTube検索URLを生成 */
+function buildHighlightUrl(match: Match): string {
+  const homeJp = teamNameJp(match.homeTeam);
+  const awayJp = teamNameJp(match.awayTeam);
+  const query = encodeURIComponent(`${homeJp} ${awayJp} ハイライト`);
+  return `https://www.youtube.com/results?search_query=${query}`;
+}
 /** 試合をGoogleカレンダーに追加するURLを生成 */
 function buildGcalUrl(match: Match): string {
   const kickoffMs = Number(match.kickoffUtcMs);
@@ -30,6 +67,8 @@ interface Props {
   /** scope === "past" の場合スコアを表示 */
   showScore: boolean;
   emptyText?: string;
+  /** 現地時間表示モード */
+  showLocalTime?: boolean;
 }
 
 interface DateGroup {
@@ -67,7 +106,7 @@ const STATUS_LABEL: Record<string, string> = {
   live: "LIVE",
 };
 
-export function MatchScheduleTable({ matches, showScore, emptyText }: Props) {
+export function MatchScheduleTable({ matches, showScore, emptyText, showLocalTime = false }: Props) {
   const groups = useMemo(() => groupByDate(matches), [matches]);
 
   if (groups.length === 0) {
@@ -103,6 +142,11 @@ export function MatchScheduleTable({ matches, showScore, emptyText }: Props) {
                 const homeJp = teamNameJp(match.homeTeam);
                 const awayJp = teamNameJp(match.awayTeam);
                 const leagueDisp = leagueDisplayJp(match.leagueNameJp);
+                const localTz = getLeagueTz(match.leagueId);
+                // showLocalTime=true のとき主表示を現地時間に切り替え
+                const shownTime = showLocalTime
+                  ? toLocalTime(Number(match.kickoffUtcMs), localTz)
+                  : displayTime;
                 return (
                   <li key={match.eventId} className="match-row p-3 sm:p-4">
                     {/* リーグ行（常時表示） */}
@@ -116,6 +160,19 @@ export function MatchScheduleTable({ matches, showScore, emptyText }: Props) {
                             <MapPin className="h-3 w-3 shrink-0" />
                             <span className="truncate">{match.venue}</span>
                           </span>
+                        )}
+                        {/* ハイライトリンク（終了試合のみ） */}
+                        {match.status === "finished" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 gap-1 px-1.5 text-[10px] text-red-500 hover:text-red-600"
+                            title="ハイライト動画を検索"
+                            onClick={() => window.open(buildHighlightUrl(match), "_blank")}
+                          >
+                            <Youtube className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">ハイライト</span>
+                          </Button>
                         )}
                         {/* Googleカレンダー追加ボタン（予定試合のみ） */}
                         {!showScore && match.status === "scheduled" && (
@@ -142,12 +199,18 @@ export function MatchScheduleTable({ matches, showScore, emptyText }: Props) {
                       <div className="flex flex-col">
                         <span
                           className={`font-mono text-base font-bold tabular-nums leading-none sm:text-lg ${
-                            isLateNight ? "text-accent" : "text-foreground"
+                            isLateNight && !showLocalTime ? "text-accent" : "text-foreground"
                           }`}
-                          title={isLateNight ? "深夜キックオフ（24時超え表記）" : undefined}
+                          title={isLateNight && !showLocalTime ? "深夜キックオフ（24時超え表記）" : showLocalTime ? `現地時間 (${localTz})` : undefined}
                         >
-                          {displayTime}
+                          {shownTime}
                         </span>
+                        {showLocalTime && (
+                          <span className="mt-0.5 flex items-center gap-0.5 text-[9px] text-muted-foreground/70">
+                            <Clock className="h-2.5 w-2.5 shrink-0" />
+                            {displayTime} JST
+                          </span>
+                        )}
                         <span className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
                           {isPostponed ? statusLabel : isLateNight ? "深夜" : statusLabel}
                         </span>

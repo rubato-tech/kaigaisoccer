@@ -1,10 +1,13 @@
 /**
  * TheSportsDB から試合データを取得して `matches` テーブルへ upsert する。
  *
- * Free API key (3) では `eventsnextleague.php` / `eventspastleague.php` が
- * リーグ ID を無視して常に同じデータを返す制限があるため、
- * `eventsround.php?id=...&r=...&s=...` を各ラウンドに対して呼び出して
- * 1シーズン分の試合を取得する方式を採用する。
+ * 取得方式（レート制限対策）:
+ * 1. fetchCurrentRound() で現在ラウンドを推定（next/past各15試合から判定）
+ * 2. 現在ラウンド ±3 節（計最大7ラウンド）のみ eventsround.php で取得
+ *    → 1リーグあたり最大9リクエスト（lookupleague×1 + eventsround×7 + next/past×2）
+ *    → 全25リーグで約225リクエスト（以前の750から大幅削減）
+ *
+ * UEFA・カップ戦はラウンド番号体系が異なるため、next/past方式のみを使用する。
  */
 
 import { JAPANESE_PLAYER_TEAMS, LEAGUES, type LeagueDef } from "@shared/leagues";
@@ -12,8 +15,11 @@ import { getDb } from "./db";
 import { matches as matchesTable, syncLog } from "../drizzle/schema";
 import {
   eventToUtcMs,
+  fetchCurrentRound,
   fetchCurrentSeason,
   fetchEventsByRound,
+  fetchNextLeagueEvents,
+  fetchPastLeagueEvents,
   normalizeStatus,
   type SportsDbEvent,
 } from "./sportsDb";
@@ -66,54 +72,22 @@ function eventToInsert(league: LeagueDef, ev: SportsDbEvent) {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/**
- * 並列処理ヘルパー：items を concurrency 個ずつバッチで処理する。
- */
-async function mapWithConcurrency<T, R>(
-  items: T[],
-  concurrency: number,
-  fn: (item: T) => Promise<R>,
-): Promise<R[]> {
-  const results: R[] = new Array(items.length);
-  let next = 0;
-  const workers = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
-    while (true) {
-      const i = next++;
-      if (i >= items.length) break;
-      results[i] = await fn(items[i]!);
-    }
-  });
-  await Promise.all(workers);
-  return results;
-}
-
-/**
- * リーグ 1 つを同期する。
- */
-export async function syncOneLeague(
+async function upsertEvents(
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   league: LeagueDef,
-  options: { concurrency?: number } = {},
-): Promise<{ fetched: number; upserted: number; errors: string[] }> {
-  const db = await getDb();
-  if (!db) return { fetched: 0, upserted: 0, errors: ["DB unavailable"] };
-  const concurrency = options.concurrency ?? 4;
-  const errors: string[] = [];
-  let fetched = 0;
-  let upserted = 0;
-  const season = (await fetchCurrentSeason(league.id)) ?? "2025-2026";
-
-  const allEvents = await mapWithConcurrency(league.rounds, concurrency, async (round) => {
-    try {
-      return await fetchEventsByRound(league.id, round, season);
-    } catch (err) {
-      errors.push(`${league.nameJp} R${round}: ${(err as Error).message}`);
-      return [] as SportsDbEvent[];
-    }
+  events: SportsDbEvent[],
+  errors: string[],
+): Promise<number> {
+  // 重複排除
+  const seen = new Set<string>();
+  const unique = events.filter((ev) => {
+    if (seen.has(ev.idEvent)) return false;
+    seen.add(ev.idEvent);
+    return true;
   });
-  const flat = allEvents.flat();
-  fetched += flat.length;
 
-  for (const ev of flat) {
+  let upserted = 0;
+  for (const ev of unique) {
     const row = eventToInsert(league, ev);
     if (!row) continue;
     try {
@@ -148,6 +122,85 @@ export async function syncOneLeague(
       errors.push(`upsert ${ev.idEvent}: ${(err as Error).message}`);
     }
   }
+  return upserted;
+}
+
+/**
+ * リーグ 1 つを同期する。
+ * - euro_league: 現在ラウンド ±3 節（計最大7ラウンド）を eventsround.php で取得
+ * - cup / uefa / national_team: next/past 各15試合を使用
+ */
+export async function syncOneLeague(
+  league: LeagueDef,
+): Promise<{ fetched: number; upserted: number; errors: string[] }> {
+  const db = await getDb();
+  if (!db) return { fetched: 0, upserted: 0, errors: ["DB unavailable"] };
+  const errors: string[] = [];
+  let fetched = 0;
+  let upserted = 0;
+
+  if (league.category === "euro_league") {
+    // ステップ1: 現在ラウンドを推定（next/past各15試合から）
+    const currentRound = await fetchCurrentRound(league.id);
+    await sleep(500);
+
+    if (currentRound === null) {
+      // ラウンド推定失敗時はnext/pastにフォールバック
+      console.warn(`[sync] ${league.nameJp}: currentRound推定失敗、next/pastにフォールバック`);
+      const [nextEvents, pastEvents] = await Promise.allSettled([
+        fetchNextLeagueEvents(league.id),
+        fetchPastLeagueEvents(league.id),
+      ]);
+      const all: SportsDbEvent[] = [
+        ...(nextEvents.status === "fulfilled" ? nextEvents.value : []),
+        ...(pastEvents.status === "fulfilled" ? pastEvents.value : []),
+      ];
+      fetched = all.length;
+      upserted = await upsertEvents(db, league, all, errors);
+      return { fetched, upserted, errors };
+    }
+
+    // ステップ2: 現在ラウンド ±3 節（最大7ラウンド）を取得
+    const WINDOW = 3;
+    const maxRound = Math.max(...league.rounds);
+    const minRound = Math.min(...league.rounds);
+    const targetRounds: number[] = [];
+    for (let r = currentRound - WINDOW; r <= currentRound + WINDOW; r++) {
+      if (r >= minRound && r <= maxRound) targetRounds.push(r);
+    }
+
+    const season = (await fetchCurrentSeason(league.id)) ?? "2025-2026";
+    await sleep(300);
+
+    console.log(`[sync] ${league.nameJp}: ラウンド${targetRounds[0]}〜${targetRounds[targetRounds.length - 1]}を取得（現在R${currentRound}）`);
+
+    const allEvents: SportsDbEvent[] = [];
+    for (const round of targetRounds) {
+      await sleep(500); // レート制限対策
+      try {
+        const events = await fetchEventsByRound(league.id, round, season);
+        allEvents.push(...events);
+      } catch (err) {
+        errors.push(`${league.nameJp} R${round}: ${(err as Error).message}`);
+      }
+    }
+
+    fetched = allEvents.length;
+    upserted = await upsertEvents(db, league, allEvents, errors);
+  } else {
+    // cup / uefa / national_team: next/past 各15試合
+    const [nextRes, pastRes] = await Promise.allSettled([
+      fetchNextLeagueEvents(league.id),
+      fetchPastLeagueEvents(league.id),
+    ]);
+    const all: SportsDbEvent[] = [
+      ...(nextRes.status === "fulfilled" ? nextRes.value : []),
+      ...(pastRes.status === "fulfilled" ? pastRes.value : []),
+    ];
+    fetched = all.length;
+    upserted = await upsertEvents(db, league, all, errors);
+  }
+
   return { fetched, upserted, errors };
 }
 
@@ -174,10 +227,13 @@ export async function syncAllLeagues(): Promise<SyncResult> {
 
   for (const league of LEAGUES) {
     try {
-      const r = await syncOneLeague(league, { concurrency: 4 });
+      const r = await syncOneLeague(league);
       fetched += r.fetched;
       upserted += r.upserted;
       errors.push(...r.errors);
+      console.log(`[sync] ${league.nameJp}: fetched=${r.fetched} upserted=${r.upserted} errors=${r.errors.length}`);
+      // リーグ間に1.5秒待機（レート制限対策）
+      await sleep(1500);
     } catch (err) {
       errors.push(`league ${league.id} (${league.nameJp}): ${(err as Error).message}`);
     }

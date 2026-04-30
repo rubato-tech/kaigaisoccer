@@ -73,7 +73,7 @@ async function startServer() {
         res.status(404).json({ ok: false, error: `league ${id} not found` });
         return;
       }
-      const result = await syncOneLeague(league, { concurrency: 2 });
+      const result = await syncOneLeague(league);
       res.json({ ok: true, league: league.nameJp, ...result });
     } catch (err) {
       console.error("[refresh-league] failed:", err);
