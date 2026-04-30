@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
 import { CalendarDays, Globe2, Loader2, Newspaper, RefreshCw, Star, Trophy, UserRound } from "lucide-react";
 import { AdBanner } from "@/components/AdBanner";
+import { AdSenseBlock } from "@/components/AdSenseBlock";
 import { FavoriteTeams } from "@/components/FavoriteTeams";
+import { WeeklyPlanner } from "@/components/WeeklyPlanner";
+import { MonetizationSection } from "@/components/MonetizationSection";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -231,6 +234,7 @@ export default function Home() {
       {/* ヘッダー下 横長バナー広告 */}
       <div className="container py-2">
         <AdBanner slot="horizontal" />
+        <AdSenseBlock slot={import.meta.env.VITE_ADSENSE_SLOT_TOP} className="mt-2" />
       </div>
 
       <main className="container py-6 md:py-10">
@@ -259,9 +263,22 @@ export default function Home() {
           />
         </div>
 
+        {/* 週間観戦プランナー（欧州日程タブのみ表示） */}
+        {(view === "euro_upcoming" || view === "japanese_upcoming" || view === "favorites") && (
+          <div className="mt-10">
+            <WeeklyPlanner matches={merged} />
+          </div>
+        )}
+
+        {/* アフィリエイト収益化セクション */}
+        <div className="mt-10">
+          <MonetizationSection />
+        </div>
+
         {/* フッター上 横長バナー広告 */}
         <div className="mt-10">
           <AdBanner slot="horizontal" />
+          <AdSenseBlock slot={import.meta.env.VITE_ADSENSE_SLOT_INLINE} className="mt-2" />
         </div>
         <SiteFooter />
       </main>

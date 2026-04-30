@@ -108,3 +108,26 @@
 ### 外部運用・収益化
 - [x] EXTERNAL_DEPLOY_GUIDE.mdをkaigaisoccer.com対応版に完全更新
 - [x] Railway/VPSデプロイ手順・自動更新・収益ロードマップを記載
+
+## 全部いいとこ取りブラッシュアップ（2026-05-01）
+
+### 他AIコンポーネント移植
+- [x] WeeklyPlanner.tsx 作成（観戦予定リスト・一括ICSダウンロード・カレンダー追加）
+- [x] MonetizationSection.tsx 作成（アフィリエイト４渠・環境変数連動）
+- [x] lib/monetization.ts 作成（VITE_AFFILIATE_*環境変数でURL管理）
+- [x] lib/storage.ts 作成（WATCHLIST_KEY・ FAVORITE_TEAMS_KEY）
+- [x] hooks/useGoogleCalendar.ts 作成（API/URL自動切替フック）
+- [x] lib/googleIdentity.ts 作成（Google OAuth PKCEフロー）
+- [x] lib/googleCalendarDirect.ts 作成（Calendar API v3直接書き込み）
+- [x] lib/calendar.ts 作成（gcal URL生成・ICSビルド・ダウンロード）
+- [x] Home.tsxにWeeklyPlanner・ MonetizationSection・AdSenseBlockを統合
+
+### SEO対策強化
+- [x] index.htmlをOGP・Twitter Card・JSON-LD・canonical完全版に更新（kaigaisoccer.com対応）
+- [x] client/public/sitemap.xml 作成（kaigaisoccer.com対応）
+- [x] client/public/robots.txt 作成（Sitemap参照・API除外）
+
+### 収益化強化
+- [x] AdSenseBlock.tsx 作成（VITE_ADSENSE_CLIENT/SLOT環境変数連動）
+- [x] Home.tsxにAdSenseBlockをヘッダー下・フッター上に配置
+- [ ] VITE_AFFILIATE_*・VITE_GOOGLE_CLIENT_ID・VITE_ADSENSE_*環境変数の手順書を更新
