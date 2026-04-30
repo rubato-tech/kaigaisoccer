@@ -80,6 +80,36 @@ async function startServer() {
       res.status(500).json({ ok: false, error: (err as Error).message });
     }
   });
+  // iCalフィードエンドポイント（HMAC署名トークン方式で保護）
+  app.get("/api/ical/:token", async (req, res) => {
+    try {
+      const { verifyIcalToken, buildIcal } = await import("../routers/favorites");
+      const userId = verifyIcalToken(req.params.token);
+      if (!userId) {
+        res.status(403).send("Invalid or expired token");
+        return;
+      }
+      const { eq } = await import("drizzle-orm");
+      const { getDb, listMatchesForTeams } = await import("../db");
+      const { favorites } = await import("../../drizzle/schema");
+      const db = await getDb();
+      if (!db) {
+        res.status(503).send("Database unavailable");
+        return;
+      }
+      const favRows = await db.select().from(favorites).where(eq(favorites.userId, userId));
+      const teamNames = favRows.map((r: { teamName: string }) => r.teamName);
+      const matches = teamNames.length > 0 ? await listMatchesForTeams(teamNames, "upcoming") : [];
+      const ical = buildIcal(matches);
+      res.setHeader("Content-Type", "text/calendar; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename=\"soccer-${userId}.ics\"`);
+      res.send(ical);
+    } catch (err) {
+      console.error("[ical] error:", err);
+      res.status(500).send("Internal Server Error");
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",

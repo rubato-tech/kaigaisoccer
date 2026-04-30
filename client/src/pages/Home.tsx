@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { CalendarDays, Globe2, Loader2, Newspaper, RefreshCw, Trophy, UserRound } from "lucide-react";
+import { CalendarDays, Globe2, Loader2, Newspaper, RefreshCw, Star, Trophy, UserRound } from "lucide-react";
 import { AdBanner } from "@/components/AdBanner";
+import { FavoriteTeams } from "@/components/FavoriteTeams";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,15 +12,14 @@ import { toJstParts } from "@shared/datetime";
 import { applyMatchFilter } from "@shared/matchFilter";
 import { leagueDisplayJp } from "@shared/teamNames";
 
-type ViewKey = "euro_upcoming" | "euro_past" | "japanese_upcoming" | "national_upcoming";
+type ViewKey = "euro_upcoming" | "euro_past" | "cup_upcoming" | "japanese_upcoming" | "national_upcoming" | "favorites";
 
 interface ViewSpec {
   label: string;
   shortLabel: string;
-  icon: typeof CalendarDays;
-  category: "euro_league" | "uefa" | "national_team" | "japanese_player";
+  icon: React.ElementType;
+  category: "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player" | "favorites";
   scope: "upcoming" | "past";
-  /** UEFA も同タブで表示する場合 true */
   includeUefa?: boolean;
   showScore: boolean;
   emptyText: string;
@@ -49,8 +49,18 @@ const VIEWS: Record<ViewKey, ViewSpec> = {
     emptyText: "結果データがまだ取得されていません。",
     description: "欧州主要リーグおよびUEFA大会の直近21日間の試合結果。スコア付きで一覧表示。",
   },
+  cup_upcoming: {
+    label: "カップ戦",
+    shortLabel: "カップ戦",
+    icon: Trophy,
+    category: "cup",
+    scope: "upcoming",
+    showScore: false,
+    emptyText: "カップ戦の予定は現在ありません。",
+    description: "FAカップ・コパ・デル・レイ・DFBポカール・コッパ・イタリア・クープ・ド・フランスなど各国カップ戦の日程。",
+  },
   japanese_upcoming: {
-    label: "日本人選手出場試合",
+    label: "日本人選手",
     shortLabel: "日本人選手",
     icon: UserRound,
     category: "japanese_player",
@@ -60,7 +70,7 @@ const VIEWS: Record<ViewKey, ViewSpec> = {
     description: "日本人選手が在籍する欧州クラブの今後の試合を抽出してまとめます。",
   },
   national_upcoming: {
-    label: "代表戦日程",
+    label: "代表戦",
     shortLabel: "代表戦",
     icon: Globe2,
     category: "national_team",
@@ -68,6 +78,16 @@ const VIEWS: Record<ViewKey, ViewSpec> = {
     showScore: false,
     emptyText: "代表戦の予定は現在ありません。",
     description: "FIFAウィンドウや国際大会など、各国代表チームの試合スケジュール。",
+  },
+  favorites: {
+    label: "お気に入り",
+    shortLabel: "お気に入り",
+    icon: Star,
+    category: "favorites",
+    scope: "upcoming",
+    showScore: false,
+    emptyText: "お気に入りチームを登録すると、そのチームの試合だけを表示します。",
+    description: "お気に入り登録したチームの今後30日間の試合をまとめて表示します。",
   },
 };
 
@@ -88,9 +108,13 @@ export default function Home() {
   const [filter, setFilter] = useState<FilterState>(EMPTY_FILTER);
   const spec = VIEWS[view];
 
+  // 通常タブのデータ取得（favoritesタブ以外）
   const { data, error, isLoading, isFetching, refetch } = trpc.matches.list.useQuery(
-    { category: spec.category, scope: spec.scope },
-    { staleTime: 60_000 },
+    { category: spec.category === "favorites" ? "euro_league" : spec.category, scope: spec.scope },
+    {
+      enabled: spec.category !== "favorites",
+      staleTime: 60_000,
+    },
   );
 
   // UEFA を別途取得して欧州日程／結果に合流
@@ -101,13 +125,24 @@ export default function Home() {
       staleTime: 60_000,
     },
   );
-  const queryError = error ?? uefaError ?? null;
+
+  // お気に入りタブのデータ取得
+  const { data: favData, isLoading: favLoading, error: favError } = trpc.favorites.upcomingMatches.useQuery(
+    undefined,
+    {
+      enabled: view === "favorites",
+      staleTime: 60_000,
+    },
+  );
+
+  const queryError = error ?? uefaError ?? (view === "favorites" ? favError : null) ?? null;
 
   const merged = useMemo(() => {
+    if (view === "favorites") return favData ?? [];
     const list = [...(data?.matches ?? [])];
     if (spec.includeUefa && uefaData?.matches) list.push(...uefaData.matches);
     return list;
-  }, [data?.matches, uefaData?.matches, spec.includeUefa]);
+  }, [view, data?.matches, uefaData?.matches, spec.includeUefa, favData]);
 
   // 現在のビューに含まれているリーグ一覧（フィルタチップ用）
   const availableLeagues = useMemo(() => {
@@ -134,15 +169,16 @@ export default function Home() {
     return `${p.year}年${p.month}月${p.day}日（${wk}）`;
   }, []);
 
+  const isCurrentLoading = view === "favorites" ? favLoading : isLoading;
+
   return (
     <div className="min-h-screen">
       <SiteHeader todayLabel={todayLabel} />
 
-      {/* タブナビゲーション：スマホでは横スクロール、PCでは全表示 */}
+      {/* タブナビゲーション */}
       <div className="sticky top-0 z-20 border-b border-border/70 bg-card/95 backdrop-blur">
         <div className="container">
           <div className="flex items-center justify-between gap-2">
-            {/* タブ一覧：overflow-x-auto で横スクロール可能 */}
             <div
               className="-mb-px flex flex-1 overflow-x-auto"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
@@ -154,7 +190,7 @@ export default function Home() {
                 return (
                   <button
                     key={key}
-                    onClick={() => setView(key)}
+                    onClick={() => { setView(key); setFilter(EMPTY_FILTER); }}
                     className={[
                       "flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-3.5 text-sm font-semibold transition-colors sm:px-4",
                       isActive
@@ -170,7 +206,6 @@ export default function Home() {
                 );
               })}
             </div>
-
             {/* 再読み込みボタン */}
             <div className="flex shrink-0 items-center gap-2 pl-2">
               <span className="hidden text-xs text-muted-foreground sm:inline">最終更新:&nbsp;{formatRelative(lastSync)}</span>
@@ -199,11 +234,19 @@ export default function Home() {
       </div>
 
       <main className="container py-6 md:py-10">
+        {/* お気に入りタブのみFavoriteTeamsを表示 */}
+        {view === "favorites" && (
+          <div className="mb-6 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
+            <h2 className="mb-3 font-serif text-lg font-bold text-foreground">お気に入りチーム設定</h2>
+            <FavoriteTeams />
+          </div>
+        )}
+
         <div role="tabpanel">
           <ViewSection
             title={spec.label}
             description={spec.description}
-            isLoading={isLoading}
+            isLoading={isCurrentLoading}
             error={queryError}
             onRetry={() => refetch()}
             matches={filtered}
@@ -220,7 +263,6 @@ export default function Home() {
         <div className="mt-10">
           <AdBanner slot="horizontal" />
         </div>
-
         <SiteFooter />
       </main>
     </div>
@@ -240,7 +282,7 @@ function SiteHeader({ todayLabel }: { todayLabel: string }) {
               海外サッカー日程
             </h1>
             <p className="text-xs text-muted-foreground md:text-sm">
-              欧州主要リーグ・UEFA大会・代表戦を日本時間で一覧
+              欧州主要リーグ・UEFA大会・カップ戦・代表戦を日本時間で一覧
             </p>
           </div>
         </div>
@@ -315,13 +357,11 @@ function ViewSection(props: {
           </div>
         </div>
       </div>
-
       <MatchFilters
         state={filter}
         onChange={onFilterChange}
         availableLeagues={availableLeagues}
       />
-
       {isLoading ? (
         <div className="flex items-center justify-center py-20 text-muted-foreground" role="status">
           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -357,6 +397,11 @@ function SiteFooter() {
       </p>
       <p className="mt-2 text-[11px]">
         対応リーグ: {LEAGUES.filter((l) => l.category !== "national_team").map((l) => leagueDisplayJp(l.nameJp)).join("、")}
+      </p>
+      <p className="mt-3 text-[11px]">
+        <a href="/privacy" className="underline hover:text-foreground">プライバシーポリシー</a>
+        &nbsp;・&nbsp;
+        <a href="/contact" className="underline hover:text-foreground">お問い合わせ</a>
       </p>
     </footer>
   );

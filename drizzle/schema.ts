@@ -96,3 +96,24 @@ export const syncLog = mysqlTable("sync_log", {
 
 export type SyncLog = typeof syncLog.$inferSelect;
 export type InsertSyncLog = typeof syncLog.$inferInsert;
+
+/**
+ * お気に入りチームテーブル
+ * ユーザーごとにお気に入り登録したチーム名（TheSportsDB英語名）を保存。
+ */
+export const favorites = mysqlTable(
+  "favorites",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId").notNull(),
+    /** TheSportsDB のチーム名（strHomeTeam/strAwayTeamに一致する英語名） */
+    teamName: varchar("teamName", { length: 128 }).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => ({
+    userTeamIdx: index("idx_favorites_user_team").on(table.userId, table.teamName),
+  }),
+);
+
+export type Favorite = typeof favorites.$inferSelect;
+export type InsertFavorite = typeof favorites.$inferInsert;

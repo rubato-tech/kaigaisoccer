@@ -93,7 +93,7 @@ export async function getUserByOpenId(openId: string) {
 // ---------- 試合データクエリ ----------
 
 export interface MatchListParams {
-  category: "euro_league" | "uefa" | "national_team" | "japanese_player";
+  category: "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player";
   /** scope: upcoming = 直近, past = 終了済み */
   scope: "upcoming" | "past";
   /** UTC ms。指定なしならサーバー現在時刻 */
@@ -131,6 +131,32 @@ export async function listMatches(params: MatchListParams): Promise<Match[]> {
 
   const rows = await db.select().from(matches).where(where).orderBy(orderCol).limit(limit);
   return rows;
+}
+
+/**
+ * 指定チーム名の試合一覧を取得（お気に入りチーム用）
+ */
+export async function listMatchesForTeams(
+  teamNames: string[],
+  scope: "upcoming" | "past",
+  nowUtcMs?: number,
+): Promise<Match[]> {
+  const db = await getDb();
+  if (!db || teamNames.length === 0) return [];
+  const now = nowUtcMs ?? Date.now();
+  const FUTURE_WINDOW_MS = 30 * 24 * 60 * 60 * 1000; // 30日
+  const PAST_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;   // 14日
+  const timeCondition =
+    scope === "upcoming"
+      ? and(gte(matches.kickoffUtcMs, now - 4 * 60 * 60 * 1000), lte(matches.kickoffUtcMs, now + FUTURE_WINDOW_MS))
+      : and(gte(matches.kickoffUtcMs, now - PAST_WINDOW_MS), lt(matches.kickoffUtcMs, now - 4 * 60 * 60 * 1000));
+  // homeTeam OR awayTeam が対象チームのいずれかに一致
+  const teamConditions = or(
+    ...teamNames.flatMap((t) => [eq(matches.homeTeam, t), eq(matches.awayTeam, t)]),
+  );
+  const where = and(teamConditions, timeCondition);
+  const orderCol = scope === "upcoming" ? asc(matches.kickoffUtcMs) : desc(matches.kickoffUtcMs);
+  return db.select().from(matches).where(where).orderBy(orderCol).limit(500);
 }
 
 export async function getLatestSyncInfo() {

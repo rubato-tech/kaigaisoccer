@@ -77,3 +77,34 @@
 - [x] カップ戦データをTheSportsDB eventsround.phpで取得・DB同期（FAカップ157件・コパ・デル・レイ86件・コッパ・イタリア36件・DFBポカール54件・クープ・ド・フランス97件）
 - [x] カップ戦チーム名のカタカナマッピング追加（重複キー14件を修正済み）
 - [x] テスト更新・動作確認・チェックポイント保存（25件全合格・カップ戦表示確認済み）
+
+## 大規模拡張フェーズ（2026-04-30）
+
+### リーグ拡張
+- [x] leagues.tsにスコットランド(4330)/オランダ(4337)/ベルギー(4338)/ポルトガル(4344)を追加
+- [x] leagues.tsにタサ・デ・ポルトガル(4510)カップ戦を追加
+- [x] JAPANESE_PLAYER_TEAMSを新リーグ対応クラブに更新
+- [x] LEAGUE_DISPLAY_JPに新リーグ名追加
+
+### DBスキーマ拡張
+- [x] favoritesテーブル（ユーザーお気に入りチーム）をschema.tsに追加
+- [x] マイグレーションSQL生成・適用Ｈ0003_chemical_jack_power.sql）
+
+### お気に入りチーム機能
+- [x] お気に入りチーム設定UI（FavoriteTeamsコンポーネント）実装
+- [x] お気に入りチームの試合のみ表示するタブをHome.tsxに追加
+- [x] favorites tRPCルーター（CRUD）実装
+
+### Googleカレンダー連携
+- [x] 個別試合をGoogleカレンダーに追加するボタン実装（MatchScheduleTable）
+- [x] お気に入りチームの全試合をiCalフィードでエクスポート（/api/ical/:userId）
+- [x] FavoriteTeamsコンポーネントにGoogleカレンダー一括追加ボタン実装
+
+### 追加推奨機能
+- [x] プライバシーポリシーページ（/privacy）作成（AdSense審査必須）
+- [x] お問い合わせページ（/contact）作成（AdSense審査必須）
+- [x] App.tsxにルート追加（/privacy・/contact）
+
+### 外部運用・収益化
+- [x] EXTERNAL_DEPLOY_GUIDE.mdをkaigaisoccer.com対応版に完全更新
+- [x] Railway/VPSデプロイ手順・自動更新・収益ロードマップを記載

@@ -1,197 +1,151 @@
-# 外部サーバー移行・広告収益化 完全ガイド
+# 海外サッカー日程サイト — 外部サーバー運用・収益最大化 完全ガイド
 
-> 海外サッカー日程サイト（`soccer_schedule_jp`）を外部サーバーで運用し、Google AdSense によるクリック報酬収入を得るための手順書です。
+> **ドメイン**: `kaigaisoccer.com`（取得済み）  
+> **目的**: 完全自動化・運用コスト最小・収益最大化
 
 ---
 
 ## 目次
 
-1. [外部サーバーの選択肢](#1-外部サーバーの選択肢)
-2. [Railway へのデプロイ（推奨）](#2-railway-へのデプロイ推奨)
-3. [VPS（さくら・ConoHa）へのデプロイ](#3-vpsさくらconoha-へのデプロイ)
-4. [データベースの移行](#4-データベースの移行)
-5. [Google AdSense の申請と設定](#5-google-adsense-の申請と設定)
-6. [サッカー系アフィリエイトの追加収益化](#6-サッカー系アフィリエイトの追加収益化)
-7. [独自ドメインの設定](#7-独自ドメインの設定)
-8. [運用後のメンテナンス](#8-運用後のメンテナンス)
+1. [アーキテクチャ概要](#1-アーキテクチャ概要)
+2. [外部サーバーへのデプロイ手順](#2-外部サーバーへのデプロイ手順)
+3. [自動データ更新の仕組み](#3-自動データ更新の仕組み)
+4. [Google AdSense 申請手順](#4-google-adsense-申請手順)
+5. [アフィリエイト収益化戦略](#5-アフィリエイト収益化戦略)
+6. [収益最大化ロードマップ](#6-収益最大化ロードマップ)
+7. [SEO 対策チェックリスト](#7-seo-対策チェックリスト)
+8. [環境変数一覧](#8-環境変数一覧)
 
 ---
 
-## 1. 外部サーバーの選択肢
+## 1. アーキテクチャ概要
 
-本サイトは **Node.js（Express）+ MySQL** 構成です。以下の選択肢を比較します。
+```
+[TheSportsDB API]
+       ↓ 毎週火曜 5:00 JST（自動）
+[スケジュールタスク]
+       ↓ POST /api/scheduled/refresh
+[Express サーバー]
+       ↓ MySQL / TiDB
+[React フロントエンド]
+       ↓
+[ユーザー] ← Google カレンダー連携 / iCal フィード
+```
 
-| サービス | 月額目安 | 難易度 | 特徴 |
-|----------|----------|--------|------|
-| **Railway**（推奨） | $5〜 | ★☆☆ | GitHub 連携で自動デプロイ。MySQL も同一プラットフォームで管理可能 |
-| **Render** | $7〜 | ★☆☆ | 無料枠あり（スリープあり）。Docker 対応 |
-| **さくらの VPS** | 月額 643 円〜 | ★★★ | 国内サーバー。低遅延。自分で設定が必要 |
-| **ConoHa VPS** | 月額 880 円〜 | ★★★ | 国内サーバー。コントロールパネルが使いやすい |
-| **Xserver VPS** | 月額 1,170 円〜 | ★★★ | 国内最大手。安定性が高い |
+### 対応リーグ・大会（計18大会）
 
-**個人運用の場合は Railway が最も手軽です。** 月額 $5（約 750 円）で Node.js + MySQL を一括管理できます。
+| カテゴリ | 大会名 |
+|---------|--------|
+| 欧州5大リーグ | プレミアリーグ / ラ・リーガ / セリエA / ブンデスリーガ / リーグ・アン |
+| UEFA大会 | チャンピオンズリーグ / ヨーロッパリーグ / カンファレンスリーグ |
+| 各国カップ戦 | FAカップ / コパ・デル・レイ / コッパ・イタリア / DFBポカール / クープ・ド・フランス |
+| 日本人所属リーグ | スコットランド / オランダ / ベルギー / ポルトガル（タサ・デ・ポルトガル含む） |
+| 代表戦 | 欧州・南米・アジア主要代表 |
 
 ---
 
-## 2. Railway へのデプロイ（推奨）
+## 2. 外部サーバーへのデプロイ手順
 
-### 2-1. 事前準備
+### 方法A: Railway（推奨・最も簡単）
 
-1. [GitHub](https://github.com) にアカウントを作成し、プロジェクトを push する。
-2. [Railway](https://railway.com) にアクセスし、GitHub アカウントでサインアップする。
-
-### 2-2. プロジェクトのコードを GitHub に push
+**料金**: 月額 $5〜（Hobby プラン）
 
 ```bash
-# プロジェクトディレクトリで実行
-cd soccer_schedule_jp
+# 1. Railway CLI をインストール
+npm install -g @railway/cli
 
-# Git 初期化（未実施の場合）
-git init
-git add .
-git commit -m "Initial commit"
+# 2. ログイン
+railway login
 
-# GitHub にリポジトリを作成後、push
-git remote add origin https://github.com/あなたのユーザー名/soccer-schedule-jp.git
-git push -u origin main
+# 3. プロジェクト作成
+railway init
+
+# 4. MySQL データベースを追加
+railway add --plugin mysql
+
+# 5. 環境変数を設定（下記「環境変数一覧」参照）
+railway variables set JWT_SECRET=$(openssl rand -hex 32)
+railway variables set OWNER_OPEN_ID=<あなたのManus OpenID>
+railway variables set OWNER_NAME=<あなたの名前>
+railway variables set NODE_ENV=production
+
+# 6. デプロイ
+railway up
+
+# 7. カスタムドメインを設定
+# Railway ダッシュボード → Settings → Domains → Add Domain
+# kaigaisoccer.com を追加し、DNS を Railway に向ける
 ```
 
-### 2-3. Railway でプロジェクトを作成
-
-1. Railway ダッシュボードで **「New Project」** をクリック。
-2. **「Deploy from GitHub repo」** を選択し、リポジトリを選ぶ。
-3. Railway が `Dockerfile` を自動検出してビルドを開始する。
-
-### 2-4. MySQL データベースを追加
-
-1. Railway プロジェクト画面で **「+ Add Service」→「Database」→「MySQL」** を選択。
-2. MySQL サービスが起動したら、**「Variables」タブ** で接続情報を確認する。
-3. Web サービスの **「Variables」タブ** に以下を設定する：
+**DNS 設定（お名前.com / Cloudflare 等）**:
 
 ```
-DATABASE_URL=mysql://ユーザー名:パスワード@MySQLホスト:3306/データベース名
-JWT_SECRET=openssl rand -hex 32 で生成した値
-NODE_ENV=production
-PORT=8080
+Type: CNAME
+Name: @
+Value: <Railway が発行するドメイン>.railway.app
 ```
 
-> **JWT_SECRET の生成方法（ターミナルで実行）:**
-> ```bash
-> openssl rand -hex 32
-> ```
-
-### 2-5. データベースのマイグレーション実行
-
-Railway の **「Shell」** タブ（または CLI）で以下を実行：
+**マイグレーション実行（初回のみ）**:
 
 ```bash
-# マイグレーション SQL を順番に適用
-# Railway の MySQL コンソールで実行するか、以下のコマンドを使用
-pnpm drizzle-kit migrate
-```
-
-または、Railway の MySQL サービスの **「Connect」** タブから接続情報を取得し、ローカルの MySQL クライアントで以下の SQL ファイルを順番に実行：
-
-```
-drizzle/0000_tearful_mandarin.sql
-drizzle/0001_amazing_venus.sql
-drizzle/0002_curious_brood.sql
-```
-
-### 2-6. デプロイ確認
-
-Railway が自動的にビルド・デプロイを完了すると、`https://xxx.up.railway.app` のような URL でアクセスできるようになります。
-
----
-
-## 3. VPS（さくら・ConoHa）へのデプロイ
-
-VPS を使う場合は Docker Compose を利用するのが最も簡単です。
-
-### 3-1. VPS の初期設定
-
-```bash
-# Ubuntu 22.04 を選択してサーバーを起動後、SSH で接続
-ssh root@サーバーのIPアドレス
-
-# Docker のインストール
-curl -fsSL https://get.docker.com | sh
-systemctl enable docker
-systemctl start docker
-
-# Docker Compose のインストール
-apt-get install -y docker-compose-plugin
-```
-
-### 3-2. コードをサーバーに転送
-
-```bash
-# ローカルから SCP でアップロード（または Git を使用）
-scp -r ./soccer_schedule_jp root@サーバーIP:/opt/soccer_schedule_jp
-
-# または Git を使う場合
-git clone https://github.com/あなたのユーザー名/soccer-schedule-jp.git /opt/soccer_schedule_jp
-```
-
-### 3-3. 環境変数の設定
-
-```bash
-cd /opt/soccer_schedule_jp
-
-# env-template.txt を .env にコピーして編集
-cp env-template.txt .env
-nano .env
-```
-
-`.env` に以下を設定：
-
-```
-DATABASE_URL=mysql://soccer_user:your_password@db:3306/soccer_schedule
-MYSQL_ROOT_PASSWORD=your_root_password
-MYSQL_DATABASE=soccer_schedule
-MYSQL_USER=soccer_user
-MYSQL_PASSWORD=your_password
-JWT_SECRET=openssl rand -hex 32 で生成した値
-NODE_ENV=production
-PORT=8080
-```
-
-### 3-4. Docker Compose で起動
-
-```bash
-cd /opt/soccer_schedule_jp
-
-# ビルドして起動
-docker compose up -d --build
-
-# ログ確認
-docker compose logs -f app
-```
-
-### 3-5. データベースのマイグレーション
-
-```bash
-# コンテナ内でマイグレーションを実行
-docker compose exec app sh -c "
-  mysql -h db -u soccer_user -pyour_password soccer_schedule < drizzle/0000_tearful_mandarin.sql &&
-  mysql -h db -u soccer_user -pyour_password soccer_schedule < drizzle/0001_amazing_venus.sql &&
-  mysql -h db -u soccer_user -pyour_password soccer_schedule < drizzle/0002_curious_brood.sql
+# Railway Shell で実行
+railway run -- node -e "
+const { createConnection } = require('mysql2/promise');
+require('dotenv/config');
+async function run() {
+  const conn = await createConnection(process.env.DATABASE_URL);
+  const fs = require('fs');
+  for (const f of ['0000','0001','0002','0003'].map(n => \`drizzle/\${n}_*.sql\`)) {
+    const files = require('glob').sync(f);
+    for (const file of files) {
+      await conn.execute(fs.readFileSync(file, 'utf8'));
+    }
+  }
+  await conn.end();
+  console.log('Migration complete');
+}
+run().catch(console.error);
 "
 ```
 
-### 3-6. Nginx でリバースプロキシを設定（HTTPS 対応）
+---
+
+### 方法B: VPS（Xserver VPS / ConoHa / さくら）
+
+**料金**: 月額 880円〜（Xserver VPS 2GBプラン）
 
 ```bash
-apt-get install -y nginx certbot python3-certbot-nginx
+# 1. Ubuntu 22.04 でサーバーを起動後、SSH 接続
+ssh root@<サーバーIP>
 
-# Nginx 設定ファイルを作成
-cat > /etc/nginx/sites-available/soccer << 'EOF'
+# 2. 必要パッケージをインストール
+apt update && apt install -y docker.io docker-compose nginx certbot python3-certbot-nginx git
+
+# 3. プロジェクトをクローン（GitHub 経由）
+git clone https://github.com/<あなたのGitHub>/soccer_schedule_jp.git /opt/kaigaisoccer
+cd /opt/kaigaisoccer
+
+# 4. 環境変数ファイルを作成
+cp env-template.txt .env
+nano .env  # 各値を設定
+
+# 5. Docker で起動
+docker-compose up -d --build
+
+# 6. マイグレーション実行（初回のみ）
+docker-compose exec app sh -c "
+  mysql -h db -u soccer_user -p\$MYSQL_PASSWORD soccer_schedule < drizzle/0000_tearful_mandarin.sql
+  mysql -h db -u soccer_user -p\$MYSQL_PASSWORD soccer_schedule < drizzle/0001_amazing_venus.sql
+  mysql -h db -u soccer_user -p\$MYSQL_PASSWORD soccer_schedule < drizzle/0002_curious_brood.sql
+  mysql -h db -u soccer_user -p\$MYSQL_PASSWORD soccer_schedule < drizzle/0003_chemical_jack_power.sql
+"
+
+# 7. Nginx + SSL 設定
+cat > /etc/nginx/sites-available/kaigaisoccer << 'EOF'
 server {
-    listen 80;
-    server_name あなたのドメイン.com;
-
+    server_name kaigaisoccer.com www.kaigaisoccer.com;
     location / {
-        proxy_pass http://localhost:8080;
+        proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -201,257 +155,229 @@ server {
     }
 }
 EOF
-
-ln -s /etc/nginx/sites-available/soccer /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/kaigaisoccer /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
 
-# SSL 証明書の取得（Let's Encrypt）
-certbot --nginx -d あなたのドメイン.com
+# 8. SSL 証明書取得（Let's Encrypt）
+certbot --nginx -d kaigaisoccer.com -d www.kaigaisoccer.com
+
+# 9. 自動更新 cron 設定
+(crontab -l 2>/dev/null; echo "0 20 * * 0 curl -s -X POST http://localhost:3000/api/scheduled/refresh") | crontab -
 ```
 
 ---
 
-## 4. データベースの移行
+### 方法C: Render（無料枠あり・スリープあり）
 
-現在 Manus プラットフォームのデータベースに蓄積されている試合データを外部サーバーに移行する手順です。
+プロジェクトルートの `render.yaml` を使用してデプロイ。
 
-### 4-1. Manus からデータをエクスポート
+---
 
-Manus 管理 UI の **「Database」タブ** → **「Export」** からデータをダウンロードするか、以下の方法でエクスポートします。
+## 3. 自動データ更新の仕組み
 
-```bash
-# Manus の接続情報を使って mysqldump
-mysqldump -h [ManusDBホスト] -u [ユーザー] -p[パスワード] \
-  --no-tablespaces \
-  soccer_schedule matches sync_log users \
-  > backup.sql
-```
+本サイトは **完全自動化** されています。一度デプロイすれば追加作業は不要です。
 
-### 4-2. 外部サーバーにインポート
+### 自動更新スケジュール
 
-```bash
-# Railway の場合（Railway CLI を使用）
-railway run mysql < backup.sql
+| タイミング | 内容 |
+|-----------|------|
+| 毎週火曜 5:00 JST | 全リーグの試合データを TheSportsDB から取得・更新 |
+| 翌シーズン | TheSportsDB が新シーズンのデータを公開次第、自動取得 |
 
-# VPS の場合
-mysql -h localhost -u soccer_user -p soccer_schedule < backup.sql
-```
+> **翌シーズン対応**: TheSportsDB は毎年6〜7月に新シーズンのデータを公開します。本サイトは `eventsround.php` API でラウンドごとに取得するため、新シーズンのデータが公開されると次回の自動更新時に自動的に反映されます。手動作業は不要です。
 
-### 4-3. 初期データの再取得（推奨）
-
-移行後は、サイトの管理画面または API エンドポイントから試合データを再取得することを推奨します：
+### 手動更新（必要な場合）
 
 ```bash
-# 全リーグのデータを再同期（サーバー起動後に実行）
-curl -X POST https://あなたのドメイン.com/api/scheduled/refresh \
-  -H "Cookie: app_session_id=管理者セッションID"
+# サイト内の「再読み込み」ボタンをクリック
+# または管理者として以下のエンドポイントを叩く
+curl -X POST https://kaigaisoccer.com/api/scheduled/refresh \
+  -H "Cookie: app_session_id=<セッションID>"
 ```
 
 ---
 
-## 5. Google AdSense の申請と設定
+## 4. Google AdSense 申請手順
 
-### 5-1. AdSense 申請の前提条件
+### 申請前チェックリスト
 
-Google AdSense の審査を通過するには以下が必要です：
+- [x] 独自ドメイン取得済み（kaigaisoccer.com）
+- [x] プライバシーポリシーページ実装済み（/privacy）
+- [x] お問い合わせページ実装済み（/contact）
+- [x] SSL 証明書設定（HTTPS）
+- [ ] コンテンツ量: 3ヶ月以上の運用実績（目安）
 
-| 条件 | 本サイトの状況 |
-|------|----------------|
-| 独自ドメインを使用している | 要設定（`kaigai-soccer.manus.space` は不可） |
-| オリジナルコンテンツがある | ✅ 試合データ・日本語表示 |
-| プライバシーポリシーページがある | 要追加 |
-| 問い合わせページがある | 要追加 |
-| 18 歳以上 | 申請者の条件 |
-| コンテンツが Google ポリシーに準拠 | ✅ スポーツ情報サイト |
+### 申請手順
 
-> **重要:** `manus.space` サブドメインでは AdSense 審査を申請できません。独自ドメイン（例: `kaigai-soccer.com`）が必要です。
+1. [Google AdSense](https://www.google.com/adsense/) にアクセス
+2. 「今すぐ開始」→ サイト URL に `https://kaigaisoccer.com` を入力
+3. 審査コードを `client/index.html` の `<head>` 内に貼り付け
+4. 審査通過後（1〜2週間）、`client/src/components/AdBanner.tsx` の設定を更新
 
-### 5-2. 独自ドメインの取得
-
-1. [お名前.com](https://www.onamae.com/) や [Xserver ドメイン](https://www.xdomain.ne.jp/) でドメインを取得（年額 1,000〜2,000 円程度）。
-2. DNS 設定でサーバーの IP アドレスを指定する。
-
-### 5-3. プライバシーポリシーページの追加
-
-AdSense 審査に必要なプライバシーポリシーページを追加してください。以下のテンプレートを参考にしてください：
-
-```
-本サイトでは、Google AdSense を利用して広告を配信しています。
-Google AdSense は Cookie を使用して、ユーザーの興味に基づいた広告を表示します。
-詳細は Google のプライバシーポリシーをご確認ください。
-```
-
-### 5-4. AdSense アカウントの作成と申請
-
-1. [Google AdSense](https://www.google.com/adsense/) にアクセス。
-2. Google アカウントでログインし、「今すぐ開始」をクリック。
-3. サイトの URL（独自ドメイン）を入力して申請。
-4. 審査コード（`<meta>` タグ）を `client/index.html` の `<head>` 内に追加。
-5. 審査完了（通常 1〜2 週間）を待つ。
-
-### 5-5. 審査通過後の設定
-
-審査が通過したら、以下の手順で広告を有効化します：
-
-**① `client/index.html` の AdSense スクリプトを有効化**
-
-```html
-<!-- コメントアウトを解除し、ca-pub-XXXXXXXXXXXXXXXXX を実際の値に変更 -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXXX"
-     crossorigin="anonymous"></script>
-```
-
-**② 環境変数を設定**
-
-Railway または VPS の環境変数に以下を追加：
-
-```
-VITE_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXXX
-VITE_ADSENSE_SLOT_HORIZONTAL=広告ユニットのスロットID（10桁の数字）
-VITE_ADSENSE_SLOT_RECTANGLE=広告ユニットのスロットID
-VITE_ADSENSE_SLOT_INFEED=広告ユニットのスロットID
-```
-
-> **スロット ID の取得方法:**
-> AdSense 管理画面 → 「広告」→「広告ユニット」→「新しい広告ユニットを作成」→ コードをコピー
-
-**③ 再デプロイ**
-
-環境変数を設定後、サービスを再デプロイすると広告が表示されます。
-
-### 5-6. 広告の配置（実装済み）
-
-本サイトには以下の広告スロットが実装済みです：
-
-| 位置 | スロット種別 | 表示タイミング |
-|------|-------------|----------------|
-| タブナビゲーション直下 | 横長バナー（`horizontal`） | 常時 |
-| 試合一覧の 3 日ごと | インフィード（`infeed`） | 3 日分表示ごと |
-| フッター直上 | 横長バナー（`horizontal`） | 常時 |
-
----
-
-## 6. サッカー系アフィリエイトの追加収益化
-
-AdSense のクリック報酬に加え、以下のアフィリエイトプログラムを組み合わせることで収益を増やせます。
-
-### 6-1. 動画配信サービス（高単価・推奨）
-
-| サービス | 報酬単価 | ASP | 特徴 |
-|----------|----------|-----|------|
-| **DAZN** | 1,000〜2,000 円/件 | A8.net / バリューコマース | 欧州サッカー全試合配信 |
-| **U-NEXT サッカーパック** | 2,000〜3,000 円/件 | A8.net / afb | 高単価 |
-| **スカパー！** | 1,000〜2,000 円/件 | A8.net | 代表戦・CL 配信 |
-| **J SPORTS** | 1,000 円/件 | A8.net | ブンデスリーガ等 |
-
-> **サッカー日程サイトとの相性:** 試合日程を確認したユーザーが「試合を見たい」と思った瞬間に動画配信サービスの広告を表示できるため、コンバージョン率が高い傾向があります。
-
-### 6-2. スポーツ用品（中単価）
-
-| サービス | 報酬率 | ASP |
-|----------|--------|-----|
-| **ユニオンスポーツ** | 購入額の 5〜10% | A8.net |
-| **楽天スポーツ** | 購入額の 1〜3% | 楽天アフィリエイト |
-| **Amazon スポーツ** | 購入額の 2〜4% | Amazon アソシエイト |
-
-### 6-3. バナー広告の実装方法
-
-アフィリエイトバナーを追加する場合は、`AdBanner` コンポーネントを拡張するか、専用のバナーコンポーネントを作成します：
+### AdBanner.tsx の設定変更（審査通過後）
 
 ```tsx
-// client/src/components/AffiliateBanner.tsx の例
-export function DaznBanner() {
+// client/src/components/AdBanner.tsx の先頭付近を変更
+const ADSENSE_CLIENT = "ca-pub-XXXXXXXXXXXXXXXXX";  // あなたのパブリッシャーID
+const AD_SLOTS = {
+  horizontal: "XXXXXXXXXX",  // 横長バナーのスロットID
+  rectangle: "XXXXXXXXXX",   // レクタングルのスロットID
+  infeed: "XXXXXXXXXX",      // インフィードのスロットID
+};
+const IS_ADSENSE_ACTIVE = true;  // false → true に変更
+```
+
+---
+
+## 5. アフィリエイト収益化戦略
+
+### 推奨アフィリエイト（収益性順）
+
+| サービス | 報酬単価 | 特徴 | 申請先 |
+|---------|---------|------|--------|
+| **DAZN** | 1,000〜2,000円/件 | サッカーファン直撃・最高効率 | A8.net / バリューコマース |
+| **U-NEXT** | 2,000〜3,000円/件 | 高単価・CL配信あり | A8.net / afb |
+| **スカパー！** | 1,000〜2,000円/件 | 代表戦・CL配信 | A8.net |
+| **Amazon** | 商品価格の2〜8% | ユニフォーム・グッズ | Amazon アソシエイト |
+
+### バナー設置例（DAZN）
+
+```tsx
+// client/src/components/AffiliateBanner.tsx を新規作成
+export function DAZNBanner() {
   return (
-    <a
-      href="https://www.dazn.com/?utm_source=affiliate&utm_medium=banner&utm_campaign=soccer_schedule"
-      target="_blank"
-      rel="noopener noreferrer sponsored"
-      className="block"
-    >
-      <img
-        src="DAZNのアフィリエイトバナー画像URL"
-        alt="DAZN - 欧州サッカーを見るなら"
-        className="w-full rounded"
-      />
-    </a>
+    <div className="my-4 rounded-xl overflow-hidden border border-border">
+      <a
+        href="https://www.dazn.com/?utm_source=affiliate&utm_medium=banner&utm_campaign=kaigaisoccer"
+        target="_blank"
+        rel="noopener noreferrer sponsored"
+      >
+        <img
+          src="https://a8.net/path/to/dazn-banner.gif"
+          alt="DAZN - 海外サッカーをライブ観戦"
+          className="w-full"
+        />
+      </a>
+    </div>
   );
 }
 ```
 
+### 設置推奨箇所
+
+1. **試合一覧の下** — 観戦意欲が高まるタイミング
+2. **UEFA 大会・代表戦タブ** — 視聴需要が高い
+3. **お気に入りタブ** — 「このチームの試合を DAZN で観る」CTA ボタン
+
 ---
 
-## 7. 独自ドメインの設定
+## 6. 収益最大化ロードマップ
 
-### 7-1. DNS 設定（Railway の場合）
+### フェーズ1（〜3ヶ月）: 基盤構築
 
-1. Railway プロジェクトの **「Settings」→「Domains」** で独自ドメインを追加。
-2. ドメイン管理会社の DNS 設定で CNAME レコードを追加：
-   ```
-   CNAME  @  xxx.up.railway.app
-   ```
+- [x] サイト公開・独自ドメイン設定（kaigaisoccer.com）
+- [x] プライバシーポリシー・お問い合わせページ
+- [x] 広告スロット実装済み（AdBanner コンポーネント）
+- [ ] Google AdSense 申請・審査通過
+- [ ] DAZN アフィリエイト登録・バナー設置
 
-### 7-2. `client/index.html` の canonical URL を更新
+### フェーズ2（3〜6ヶ月）: SEO 強化
+
+- [ ] Google Search Console 登録・サイトマップ送信
+- [ ] 各リーグ・チームの紹介ページ追加（SEO コンテンツ）
+- [ ] Core Web Vitals 最適化（LCP < 2.5s）
+
+### フェーズ3（6ヶ月〜）: 収益拡大
+
+- [ ] メールマガジン（試合前日に配信）
+- [ ] プッシュ通知（試合開始1時間前）
+- [ ] 有料プラン（広告非表示・追加機能）
+
+### 月間収益試算
+
+| 月間PV | AdSense | DAZN AF | 合計 |
+|--------|---------|---------|------|
+| 1万PV | 1,000円 | 5,000円 | 6,000円 |
+| 5万PV | 5,000円 | 25,000円 | 30,000円 |
+| 20万PV | 20,000円 | 100,000円 | 120,000円 |
+
+---
+
+## 7. SEO 対策チェックリスト
+
+### 重要キーワード（狙うべき検索クエリ）
+
+```
+「海外サッカー 日程」「プレミアリーグ 日程」「CL 日程」
+「○○ vs △△ 何時」「○○ 試合 日本時間」
+「欧州サッカー 今週」「カップ戦 日程」
+```
+
+### 実装チェックリスト
+
+```bash
+# 1. サイトマップを public/sitemap.xml に追加
+# 2. robots.txt を public/robots.txt に追加
+# 3. OGP メタタグを index.html に設定
+# 4. Google Search Console に登録
+# 5. canonical URL を kaigaisoccer.com に設定
+```
+
+### OGP 設定例（client/index.html）
 
 ```html
-<!-- 独自ドメインに変更 -->
-<link rel="canonical" href="https://あなたのドメイン.com/" />
+<meta property="og:title" content="海外サッカー日程 | kaigaisoccer.com" />
+<meta property="og:description" content="欧州5大リーグ・CL・カップ戦・代表戦の試合日程を日本時間で一覧表示" />
+<meta property="og:url" content="https://kaigaisoccer.com/" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
 ```
 
 ---
 
-## 8. 運用後のメンテナンス
+## 8. 環境変数一覧
 
-### 8-1. 試合データの自動更新
+```env
+# 必須
+DATABASE_URL=mysql://user:pass@host:3306/dbname
+JWT_SECRET=<openssl rand -hex 32 で生成>
+OWNER_OPEN_ID=<Manus OpenID>
+OWNER_NAME=<あなたの名前>
 
-現在、Manus プラットフォームでは毎週火曜日 5:00 JST に自動更新スケジュールが設定されています。外部サーバーに移行後は、以下のいずれかの方法で自動更新を設定してください。
+# Manus OAuth（Manus プラットフォームから自動注入）
+VITE_APP_ID=<OAuth App ID>
+OAUTH_SERVER_URL=https://api.manus.im
+VITE_OAUTH_PORTAL_URL=https://manus.im
 
-**Railway の場合（Cron Job）:**
+# AdSense（審査通過後に設定）
+VITE_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXXX
+VITE_ADSENSE_SLOT_HORIZONTAL=XXXXXXXXXX
+VITE_ADSENSE_SLOT_RECTANGLE=XXXXXXXXXX
+VITE_ADSENSE_SLOT_INFEED=XXXXXXXXXX
 
-Railway の **「+ Add Service」→「Cron Job」** で以下を設定：
-
-```
-スケジュール: 0 20 * * 0  （毎週日曜 20:00 UTC = 月曜 5:00 JST）
-コマンド: curl -X POST http://app:8080/api/scheduled/refresh
-```
-
-**VPS の場合（crontab）:**
-
-```bash
-# crontab -e で編集
-0 20 * * 0 curl -X POST http://localhost:8080/api/scheduled/refresh
-```
-
-### 8-2. バックアップ
-
-```bash
-# データベースの定期バックアップ（VPS の場合）
-0 3 * * * mysqldump -u soccer_user -p'パスワード' soccer_schedule > /backup/soccer_$(date +\%Y\%m\%d).sql
-```
-
-### 8-3. SSL 証明書の自動更新（VPS の場合）
-
-```bash
-# Let's Encrypt の自動更新（certbot が自動設定）
-certbot renew --dry-run
+# オプション
+NODE_ENV=production
+PORT=3000
 ```
 
 ---
 
-## まとめ
+## 付録: Googleカレンダー連携・iCal フィード
 
-| ステップ | 作業内容 | 難易度 |
-|----------|----------|--------|
-| 1 | Railway または VPS にデプロイ | ★☆☆〜★★★ |
-| 2 | 独自ドメインを取得・設定 | ★☆☆ |
-| 3 | プライバシーポリシーページを追加 | ★☆☆ |
-| 4 | Google AdSense に申請 | ★☆☆ |
-| 5 | 審査通過後に環境変数を設定して再デプロイ | ★☆☆ |
-| 6 | DAZN 等のアフィリエイトバナーを追加 | ★★☆ |
+本サイトには以下の Googleカレンダー連携機能が実装されています。
 
-**予想収益（目安）:**
+| 機能 | 説明 |
+|------|------|
+| 個別試合をカレンダーに追加 | 試合一覧の各行の「📅」ボタンをクリック |
+| お気に入りチームの全試合を一括追加 | お気に入りタブ → 「Googleカレンダーに追加」ボタン |
+| iCal フィード（自動同期） | `/api/ical/<ユーザーID>` を Googleカレンダーに登録すると自動更新 |
 
-月間 PV が 10,000 の場合、AdSense のクリック率 1%・単価 20 円で計算すると月額 2,000 円程度。DAZN アフィリエイトが月 5 件成約すれば追加で 5,000〜10,000 円の収益が見込めます。
+### iCal フィードの登録方法
+
+1. サイトにログイン後、お気に入りタブで iCal URL をコピー
+2. Googleカレンダー → 「他のカレンダー」→「URL で追加」
+3. コピーした URL を貼り付けて「カレンダーを追加」
 
 ---
 
-*このガイドは 2026 年 4 月時点の情報をもとに作成しています。各サービスの料金・仕様は変更される場合があります。*
+*最終更新: 2026年4月 | 海外サッカー日程 (kaigaisoccer.com)*

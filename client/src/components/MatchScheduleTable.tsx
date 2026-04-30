@@ -1,9 +1,29 @@
 import { useMemo } from "react";
-import { CalendarX2, MapPin } from "lucide-react";
+import { CalendarX2, CalendarPlus, MapPin } from "lucide-react";
 import type { Match } from "../../../drizzle/schema";
 import { toJstDisplay } from "@shared/datetime";
 import { teamNameJp, leagueDisplayJp } from "@shared/teamNames";
 import { AdBanner } from "@/components/AdBanner";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
+/** 試合をGoogleカレンダーに追加するURLを生成 */
+function buildGcalUrl(match: Match): string {
+  const kickoffMs = Number(match.kickoffUtcMs);
+  const endMs = kickoffMs + 105 * 60 * 1000; // 105分後
+  const fmt = (ms: number) => {
+    const d = new Date(ms);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+  };
+  const homeJp = teamNameJp(match.homeTeam);
+  const awayJp = teamNameJp(match.awayTeam);
+  const league = leagueDisplayJp(match.leagueNameJp);
+  const title = encodeURIComponent(`⚽ ${homeJp} vs ${awayJp}`);
+  const details = encodeURIComponent(`${league}\nデータ: kaigaisoccer.com`);
+  const location = encodeURIComponent(match.venue ?? "");
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${fmt(kickoffMs)}/${fmt(endMs)}&details=${details}&location=${location}`;
+}
 
 interface Props {
   matches: Match[];
@@ -90,12 +110,30 @@ export function MatchScheduleTable({ matches, showScore, emptyText }: Props) {
                       <span className="league-pill inline-flex max-w-full items-center truncate rounded-full bg-secondary px-2.5 py-0.5 text-[11px] font-semibold text-secondary-foreground">
                         {leagueDisp}
                       </span>
-                      {match.venue && (
-                        <span className="hidden items-center gap-1 truncate text-[11px] text-muted-foreground sm:inline-flex">
-                          <MapPin className="h-3 w-3 shrink-0" />
-                          <span className="truncate">{match.venue}</span>
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {match.venue && (
+                          <span className="hidden items-center gap-1 truncate text-[11px] text-muted-foreground sm:inline-flex">
+                            <MapPin className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{match.venue}</span>
+                          </span>
+                        )}
+                        {/* Googleカレンダー追加ボタン（予定試合のみ） */}
+                        {!showScore && match.status === "scheduled" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 gap-1 px-1.5 text-[10px] text-muted-foreground hover:text-primary"
+                            title="Googleカレンダーに追加"
+                            onClick={() => {
+                              window.open(buildGcalUrl(match), "_blank");
+                              toast.success("Googleカレンダーを開きました");
+                            }}
+                          >
+                            <CalendarPlus className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">カレンダー</span>
+                          </Button>
+                        )}
+                      </div>
                     </div>
 
                     {/* メイン行：時刻 / ホーム / vs or スコア / アウェー */}
