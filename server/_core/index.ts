@@ -63,27 +63,33 @@ async function startServer() {
   });
 
   // リーグ 1 つだけ同期する (例: /api/scheduled/refresh-league?id=4480)
+  // 処理をバックグラウンドで実行し、202 を即時返却することで
+  // CloudRun/Railwayの60秒タイムアウトを回避する
   app.post("/api/scheduled/refresh-league", async (req, res) => {
     const cookieHeader = req.headers.cookie || "";
     if (!cookieHeader) {
       res.status(403).json({ ok: false, error: "permission error for cron cookie" });
       return;
     }
-    try {
-      const id = String((req.query.id as string) || "");
-      const { LEAGUES } = await import("@shared/leagues");
-      const { syncOneLeague } = await import("../syncMatches");
-      const league = LEAGUES.find((l) => l.id === id);
-      if (!league) {
-        res.status(404).json({ ok: false, error: `league ${id} not found` });
-        return;
-      }
-      const result = await syncOneLeague(league);
-      res.json({ ok: true, league: league.nameJp, ...result });
-    } catch (err) {
-      console.error("[refresh-league] failed:", err);
-      res.status(500).json({ ok: false, error: (err as Error).message });
+    const id = String((req.body?.leagueId as string) || (req.query.id as string) || "");
+    const { LEAGUES } = await import("@shared/leagues");
+    const league = LEAGUES.find((l) => l.id === id);
+    if (!league) {
+      res.status(404).json({ ok: false, error: `league ${id} not found` });
+      return;
     }
+    // 即座に202を返し、バックグラウンドで処理を継続
+    res.status(202).json({ ok: true, league: league.nameJp, status: "accepted" });
+    // バックグラウンド処理（レスポンス送信後に実行）
+    setImmediate(async () => {
+      try {
+        const { syncOneLeague } = await import("../syncMatches");
+        const result = await syncOneLeague(league);
+        console.log(`[refresh-league] ${league.nameJp}: fetched=${result.fetched} upserted=${result.upserted} errors=${result.errors.length}`);
+      } catch (err) {
+        console.error("[refresh-league] failed:", err);
+      }
+    });
   });
   // GitHub Actions 完了後に sync_log を更新するエンドポイント
   // リーグ別実行では sync_log が更新されないため、全リーグ完了後に呼び出す
