@@ -227,3 +227,19 @@
 - [x] server/_core/index.tsにシンプルな GET /health ルートを追加（tRPCより前に配置）
 - [x] railway.jsonのhealthcheckPathを/api/trpc/healthから/healthに修正
 - [x] TSエラーなし・テスト25件全合格
+
+## 試合数不足問題の修正（2026-05-02）
+
+- [ ] Railway DBのブンデスリーガデータ件数を確認
+- [ ] TheSportsDB APIから正しくデータが取得できているか確認
+- [ ] 取得期間・フィルタリングロジックの問題を特定
+- [ ] データ再取得して本番に反映
+
+## 全25リーグ取得件数不足の修正（2026-05-02）
+
+- [ ] 全25リーグのnext/past取得件数を調査（TheSportsDB APIの制限確認）
+- [ ] syncMatches.tsのラウンド推定ロジックを改善（next件数が少ない場合の対処）
+- [ ] euro_leagueカテゴリ：現在日付ベースでラウンドを推定する方式に変更
+- [ ] cup/uefa/national_teamカテゴリ：eventsround.phpで複数ラウンドを取得する方式に変更
+- [ ] Railway DBに全リーグのデータを再取得して投入
+- [ ] テスト実行・チェックポイント保存

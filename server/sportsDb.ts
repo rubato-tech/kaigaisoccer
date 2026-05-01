@@ -3,10 +3,13 @@
  * 無料 API キー (3) でアクセス可能なエンドポイントのみを使用する。
  *
  * 使用エンドポイント:
- * - eventspastleague.php?id=...   過去 15 試合
- * - eventsnextleague.php?id=...   今後 15 試合
- * - eventsround.php?id=...&r=...&s=... 特定ラウンド
+ * - eventspastleague.php?id=...   過去 1 試合（無料プランの制限）
+ * - eventsnextleague.php?id=...   今後 1 試合（無料プランの制限）
+ * - eventsround.php?id=...&r=...&s=... 特定ラウンド（全試合取得可能）
  * - lookupleague.php?id=...        現在シーズン取得
+ *
+ * 注意: 無料プランでは eventsnextleague / eventspastleague は各1件しか返さない。
+ * そのため eventsround.php を使って現在ラウンド周辺を広く取得する方式を採用。
  */
 
 const BASE_URL = "https://www.thesportsdb.com/api/v1/json/3";
@@ -104,31 +107,47 @@ export async function fetchEventsByRound(
 }
 
 /**
- * next/past 各15試合から現在のラウンド番号を推定する。
- * 直近の過去試合の最大ラウンド番号を「現在ラウンド」とみなす。
- * 取得できない場合は null を返す。
+ * next/past 各1試合から現在のラウンド番号を推定する。
+ *
+ * 無料APIはnext/pastが各1件しか返さないため、
+ * - next のラウンド番号（次の試合）を優先して使用
+ * - next が取れない場合は past のラウンド番号（直近の過去試合）を使用
+ * - どちらも取れない場合は null を返す
+ *
+ * 返り値: { currentRound, fromNext }
+ * - currentRound: 推定ラウンド番号（null = 推定不可）
+ * - fromNext: true = nextから取得, false = pastから取得
  */
-export async function fetchCurrentRound(idLeague: string): Promise<number | null> {
+export async function fetchCurrentRound(idLeague: string): Promise<{
+  currentRound: number | null;
+  fromNext: boolean;
+}> {
   const [nextRes, pastRes] = await Promise.allSettled([
     fetchNextLeagueEvents(idLeague),
     fetchPastLeagueEvents(idLeague),
   ]);
-  const pastEvents = pastRes.status === "fulfilled" ? pastRes.value : [];
   const nextEvents = nextRes.status === "fulfilled" ? nextRes.value : [];
+  const pastEvents = pastRes.status === "fulfilled" ? pastRes.value : [];
 
-  // 過去試合の最大ラウンドを現在ラウンドとする
-  const pastRounds = pastEvents
-    .map((ev) => (ev.intRound ? parseInt(ev.intRound, 10) : NaN))
-    .filter((r) => !isNaN(r));
-  if (pastRounds.length > 0) return Math.max(...pastRounds);
-
-  // fallback: 次の試合の最小ラウンド
+  // next の最小ラウンド（次の試合のラウンド）を優先
+  // R0 は「ラウンド未設定」を意味する無効値なので除外する
   const nextRounds = nextEvents
     .map((ev) => (ev.intRound ? parseInt(ev.intRound, 10) : NaN))
-    .filter((r) => !isNaN(r));
-  if (nextRounds.length > 0) return Math.min(...nextRounds);
+    .filter((r) => !isNaN(r) && r > 0);
+  if (nextRounds.length > 0) {
+    return { currentRound: Math.min(...nextRounds), fromNext: true };
+  }
 
-  return null;
+  // fallback: past の最大ラウンド（直近の過去試合）
+  // R0 は無効値なので除外する
+  const pastRounds = pastEvents
+    .map((ev) => (ev.intRound ? parseInt(ev.intRound, 10) : NaN))
+    .filter((r) => !isNaN(r) && r > 0);
+  if (pastRounds.length > 0) {
+    return { currentRound: Math.max(...pastRounds), fromNext: false };
+  }
+
+  return { currentRound: null, fromNext: false };
 }
 
 /**

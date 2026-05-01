@@ -2,12 +2,16 @@
  * TheSportsDB から試合データを取得して `matches` テーブルへ upsert する。
  *
  * 取得方式（レート制限対策）:
- * 1. fetchCurrentRound() で現在ラウンドを推定（next/past各15試合から判定）
- * 2. 現在ラウンド ±3 節（計最大7ラウンド）のみ eventsround.php で取得
- *    → 1リーグあたり最大9リクエスト（lookupleague×1 + eventsround×7 + next/past×2）
- *    → 全25リーグで約225リクエスト（以前の750から大幅削減）
+ * 1. fetchCurrentRound() で現在ラウンドを推定（next/past各1試合から判定）
+ *    - next が取れた場合: そのラウンドを基準に ±3 節（計最大7ラウンド）
+ *    - past のみの場合: そのラウンドを基準に ±3 節（計最大7ラウンド）
+ *    - どちらも取れない場合: 全ラウンドをスキャン（最大10ラウンド）
+ * 2. eventsround.php で各ラウンドの全試合を取得
+ *    → 1リーグあたり最大7〜10リクエスト
+ *    → 全25リーグで約175〜250リクエスト
  *
- * UEFA・カップ戦はラウンド番号体系が異なるため、next/past方式のみを使用する。
+ * UEFA・カップ戦・代表戦も同様に next/past からラウンドを推定して
+ * eventsround.php で取得する方式に統一。
  */
 
 import { JAPANESE_PLAYER_TEAMS, LEAGUES, type LeagueDef } from "@shared/leagues";
@@ -126,9 +130,83 @@ async function upsertEvents(
 }
 
 /**
+ * ラウンドベースでデータを取得する共通ロジック。
+ *
+ * next/past から現在ラウンドを推定し、その前後 WINDOW 節を取得する。
+ * - next が取れた場合: nextRound を中心に -WINDOW_BACK 〜 +WINDOW_FORWARD
+ * - past のみの場合: pastRound を中心に -WINDOW_BACK 〜 +WINDOW_FORWARD
+ * - どちらも取れない場合: rounds 配列の後半 FALLBACK_COUNT ラウンドを試行
+ */
+async function syncByRound(
+  league: LeagueDef,
+  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  errors: string[],
+): Promise<{ fetched: number; upserted: number }> {
+  const WINDOW_BACK = 3;
+  const WINDOW_FORWARD = 3;
+  const FALLBACK_COUNT = 10; // ラウンド推定失敗時に後半から試行するラウンド数
+
+  // 現在ラウンドを推定
+  const { currentRound, fromNext } = await fetchCurrentRound(league.id);
+  await sleep(400);
+
+  const season = (await fetchCurrentSeason(league.id)) ?? "2025-2026";
+  await sleep(300);
+
+  let targetRounds: number[];
+
+  if (currentRound === null) {
+    // ラウンド推定失敗 → rounds 配列の後半 FALLBACK_COUNT ラウンドを試行
+    console.warn(`[sync] ${league.nameJp}: ラウンド推定失敗、後半${FALLBACK_COUNT}ラウンドを試行`);
+    const allRounds = league.rounds;
+    targetRounds = allRounds.slice(-FALLBACK_COUNT);
+  } else {
+    const maxRound = Math.max(...league.rounds);
+    const minRound = Math.min(...league.rounds);
+
+    if (fromNext) {
+      // next から取得: 現在ラウンドを中心に前後を取得
+      targetRounds = [];
+      for (let r = currentRound - WINDOW_BACK; r <= currentRound + WINDOW_FORWARD; r++) {
+        if (r >= minRound && r <= maxRound) targetRounds.push(r);
+      }
+      console.log(
+        `[sync] ${league.nameJp}: next=R${currentRound}、ラウンド${targetRounds[0]}〜${targetRounds[targetRounds.length - 1]}を取得`,
+      );
+    } else {
+      // past のみ: 直近の過去ラウンドから前後を取得（少し前寄りに調整）
+      targetRounds = [];
+      for (let r = currentRound - WINDOW_BACK; r <= currentRound + WINDOW_FORWARD; r++) {
+        if (r >= minRound && r <= maxRound) targetRounds.push(r);
+      }
+      console.log(
+        `[sync] ${league.nameJp}: past=R${currentRound}（next未取得）、ラウンド${targetRounds[0]}〜${targetRounds[targetRounds.length - 1]}を取得`,
+      );
+    }
+  }
+
+  const allEvents: SportsDbEvent[] = [];
+  for (const round of targetRounds) {
+    await sleep(500); // レート制限対策
+    try {
+      const events = await fetchEventsByRound(league.id, round, season);
+      allEvents.push(...events);
+    } catch (err) {
+      errors.push(`${league.nameJp} R${round}: ${(err as Error).message}`);
+    }
+  }
+
+  const fetched = allEvents.length;
+  const upserted = await upsertEvents(db, league, allEvents, errors);
+  return { fetched, upserted };
+}
+
+/**
  * リーグ 1 つを同期する。
  * - euro_league: 現在ラウンド ±3 節（計最大7ラウンド）を eventsround.php で取得
- * - cup / uefa / national_team: next/past 各15試合を使用
+ * - cup / uefa / national_team: 同様に eventsround.php で取得
+ *   ただし、シーズン終了済み（next=0, past のラウンドが R200 等）の場合は
+ *   past の試合のみを保存して終了
  */
 export async function syncOneLeague(
   league: LeagueDef,
@@ -136,72 +214,54 @@ export async function syncOneLeague(
   const db = await getDb();
   if (!db) return { fetched: 0, upserted: 0, errors: ["DB unavailable"] };
   const errors: string[] = [];
-  let fetched = 0;
-  let upserted = 0;
 
   if (league.category === "euro_league") {
-    // ステップ1: 現在ラウンドを推定（next/past各15試合から）
-    const currentRound = await fetchCurrentRound(league.id);
-    await sleep(500);
-
-    if (currentRound === null) {
-      // ラウンド推定失敗時はnext/pastにフォールバック
-      console.warn(`[sync] ${league.nameJp}: currentRound推定失敗、next/pastにフォールバック`);
-      const [nextEvents, pastEvents] = await Promise.allSettled([
-        fetchNextLeagueEvents(league.id),
-        fetchPastLeagueEvents(league.id),
-      ]);
-      const all: SportsDbEvent[] = [
-        ...(nextEvents.status === "fulfilled" ? nextEvents.value : []),
-        ...(pastEvents.status === "fulfilled" ? pastEvents.value : []),
-      ];
-      fetched = all.length;
-      upserted = await upsertEvents(db, league, all, errors);
-      return { fetched, upserted, errors };
-    }
-
-    // ステップ2: 現在ラウンド ±3 節（最大7ラウンド）を取得
-    const WINDOW = 3;
-    const maxRound = Math.max(...league.rounds);
-    const minRound = Math.min(...league.rounds);
-    const targetRounds: number[] = [];
-    for (let r = currentRound - WINDOW; r <= currentRound + WINDOW; r++) {
-      if (r >= minRound && r <= maxRound) targetRounds.push(r);
-    }
-
-    const season = (await fetchCurrentSeason(league.id)) ?? "2025-2026";
-    await sleep(300);
-
-    console.log(`[sync] ${league.nameJp}: ラウンド${targetRounds[0]}〜${targetRounds[targetRounds.length - 1]}を取得（現在R${currentRound}）`);
-
-    const allEvents: SportsDbEvent[] = [];
-    for (const round of targetRounds) {
-      await sleep(500); // レート制限対策
-      try {
-        const events = await fetchEventsByRound(league.id, round, season);
-        allEvents.push(...events);
-      } catch (err) {
-        errors.push(`${league.nameJp} R${round}: ${(err as Error).message}`);
-      }
-    }
-
-    fetched = allEvents.length;
-    upserted = await upsertEvents(db, league, allEvents, errors);
+    // euro_league: ラウンドベース取得
+    const { fetched, upserted } = await syncByRound(league, db, errors);
+    return { fetched, upserted, errors };
   } else {
-    // cup / uefa / national_team: next/past 各15試合
+    // cup / uefa / national_team
+    // next/past を確認して、試合があればラウンドベース取得
+    // next=0 かつ past のラウンドが R200 等（決勝のみ）の場合はシーズン終了とみなし past のみ保存
     const [nextRes, pastRes] = await Promise.allSettled([
       fetchNextLeagueEvents(league.id),
       fetchPastLeagueEvents(league.id),
     ]);
-    const all: SportsDbEvent[] = [
-      ...(nextRes.status === "fulfilled" ? nextRes.value : []),
-      ...(pastRes.status === "fulfilled" ? pastRes.value : []),
-    ];
-    fetched = all.length;
-    upserted = await upsertEvents(db, league, all, errors);
-  }
+    const nextEvents = nextRes.status === "fulfilled" ? nextRes.value : [];
+    const pastEvents = pastRes.status === "fulfilled" ? pastRes.value : [];
 
-  return { fetched, upserted, errors };
+    // next がある場合、または past のラウンドが通常ラウンド範囲内の場合はラウンドベース取得
+    // R0 は「ラウンド未設定」を意味する無効値なので除外する
+    const pastRound =
+      pastEvents.length > 0 && pastEvents[0].intRound
+        ? parseInt(pastEvents[0].intRound, 10)
+        : null;
+    const nextRound =
+      nextEvents.length > 0 && nextEvents[0].intRound
+        ? parseInt(nextEvents[0].intRound, 10)
+        : null;
+
+    // R200 以上はカップ戦の特別ラウンド（決勝等）
+    const isSpecialRound = (r: number | null) => r !== null && r >= 100;
+    // next が R0（無効）の場合は「next なし」と同じ扱い
+    const hasValidNext = nextEvents.length > 0 && nextRound !== null && nextRound > 0;
+
+    if (!hasValidNext && isSpecialRound(pastRound)) {
+      // シーズン終了済み（決勝のみ）→ past の試合を保存して終了
+      console.log(
+        `[sync] ${league.nameJp}: シーズン終了済み（R${pastRound}）、past のみ保存`,
+      );
+      const all = [...nextEvents, ...pastEvents];
+      const fetched = all.length;
+      const upserted = await upsertEvents(db, league, all, errors);
+      return { fetched, upserted, errors };
+    }
+
+    // 通常のラウンドベース取得
+    await sleep(200); // next/past を既に取得済みなので少し待機
+    const { fetched, upserted } = await syncByRound(league, db, errors);
+    return { fetched, upserted, errors };
+  }
 }
 
 export async function syncAllLeagues(): Promise<SyncResult> {
