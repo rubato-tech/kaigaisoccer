@@ -85,6 +85,55 @@ async function startServer() {
       res.status(500).json({ ok: false, error: (err as Error).message });
     }
   });
+  // GitHub Actions 完了後に sync_log を更新するエンドポイント
+  // リーグ別実行では sync_log が更新されないため、全リーグ完了後に呼び出す
+  app.post("/api/scheduled/sync-log-finish", async (req, res) => {
+    const cookieHeader = req.headers.cookie || "";
+    if (!cookieHeader) {
+      res.status(403).json({ ok: false, error: "permission error for cron cookie" });
+      return;
+    }
+    try {
+      const { getDb } = await import("../db");
+      const { syncLog, matches: matchesTable } = await import("../../drizzle/schema");
+      const { isNull, sql } = await import("drizzle-orm");
+      const db = await getDb();
+      if (!db) {
+        res.status(500).json({ ok: false, error: "DB unavailable" });
+        return;
+      }
+      // matches テーブルの件数を取得
+      const countRows = await db.select({ cnt: sql<number>`COUNT(*)` }).from(matchesTable);
+      const totalCount = Number(countRows[0]?.cnt ?? 0);
+      // running 状態の sync_log を完了に更新
+      const updated = await db.update(syncLog)
+        .set({
+          status: "success",
+          fetchedCount: totalCount,
+          upsertedCount: totalCount,
+          finishedAt: new Date(),
+        })
+        .where(isNull(syncLog.finishedAt));
+      // running レコードがなければ新規挿入
+      const existing = await db.select().from(syncLog).orderBy(syncLog.id).limit(1);
+      if (existing.length === 0) {
+        const now = new Date();
+        await db.insert(syncLog).values({
+          source: "thesportsdb",
+          status: "success",
+          fetchedCount: totalCount,
+          upsertedCount: totalCount,
+          startedAt: now,
+          finishedAt: now,
+        });
+      }
+      res.json({ ok: true, totalCount });
+    } catch (err) {
+      console.error("[sync-log-finish] failed:", err);
+      res.status(500).json({ ok: false, error: (err as Error).message });
+    }
+  });
+
   // iCalフィードエンドポイント（HMAC署名トークン方式で保護）
   app.get("/api/ical/:token", async (req, res) => {
     try {
