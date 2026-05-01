@@ -1,0 +1,76 @@
+name: 試合データ自動更新
+
+on:
+  schedule:
+    # 毎日 日本時間 6:00, 12:00, 18:00, 23:00 に実行
+    # GitHub Actions は UTC で指定するため -9時間
+    - cron: "0 21 * * *"   # JST 6:00  (UTC 21:00 前日)
+    - cron: "0 3 * * *"    # JST 12:00 (UTC 3:00)
+    - cron: "0 9 * * *"    # JST 18:00 (UTC 9:00)
+    - cron: "0 14 * * *"   # JST 23:00 (UTC 14:00)
+  workflow_dispatch:
+    # GitHub の Actions タブから手動実行も可能
+
+jobs:
+  refresh:
+    name: 試合データを更新（リーグ別）
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      # 全リーグを並列実行せず、1つずつ順番に実行（API レート制限対策）
+      max-parallel: 3
+      fail-fast: false
+      matrix:
+        league_id:
+          # 欧州主要リーグ
+          - "4328"  # プレミアリーグ
+          - "4335"  # ラ・リーガ
+          - "4332"  # セリエA
+          - "4331"  # ブンデスリーガ
+          - "4334"  # リーグ・アン
+          - "4329"  # チャンピオンシップ
+          - "4330"  # スコティッシュ・プレミアシップ
+          - "4337"  # エールディビジ
+          - "4338"  # ジュピラー・プロ・リーグ
+          - "4344"  # プリメイラ・リーガ
+          - "4339"  # スュペル・リグ
+          # カップ戦
+          - "4482"  # FAカップ
+          - "4570"  # EFLカップ
+          - "4483"  # コパ・デル・レイ
+          - "4506"  # コッパ・イタリア
+          - "4485"  # DFBポカール
+          - "4484"  # クープ・ド・フランス
+          - "4510"  # タサ・デ・ポルトガル
+          # UEFA大会
+          - "4480"  # チャンピオンズリーグ
+          - "4481"  # ヨーロッパリーグ
+          - "5071"  # カンファレンスリーグ
+          # 代表戦
+          - "4429"  # W杯予選
+          - "4502"  # EURO
+          - "4490"  # ネーションズリーグ
+          - "4395"  # 親善試合/その他
+
+    steps:
+      - name: リーグ ${{ matrix.league_id }} のデータを更新
+        run: |
+          echo "リーグ ${{ matrix.league_id }} の更新を開始..."
+          HTTP_STATUS=$(curl -s -o /tmp/response.json -X POST \
+            "${{ secrets.SITE_URL }}/api/scheduled/refresh-league?id=${{ matrix.league_id }}" \
+            -H "Cookie: app_session_id=${{ secrets.SCHEDULED_TASK_COOKIE }}" \
+            -H "Content-Type: application/json" \
+            --max-time 120 \
+            -w "%{http_code}")
+
+          BODY=$(cat /tmp/response.json 2>/dev/null || echo "(no body)")
+          echo "HTTPステータス: $HTTP_STATUS"
+          echo "レスポンス: $BODY"
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "警告: リーグ ${{ matrix.league_id }} の更新に失敗 ($HTTP_STATUS)"
+            # fail-fast: false のため他のリーグは継続
+            exit 1
+          fi
+
+          echo "リーグ ${{ matrix.league_id }} の更新完了"
