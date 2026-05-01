@@ -12,7 +12,7 @@ jobs:
   refresh:
     name: 試合データを更新（リーグ別）
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     strategy:
       max-parallel: 3
       fail-fast: false
@@ -51,19 +51,40 @@ jobs:
     steps:
       - name: リーグデータを更新 (${{ matrix.league_id }})
         run: |
-          RESPONSE=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+          # サーバーは202を即時返却し、バックグラウンドで処理を継続する
+          # そのため --max-time は短く設定してOK（202が返れば処理は開始済み）
+          HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
             -X POST "${{ secrets.SITE_URL }}/api/scheduled/refresh-league" \
             -H "Content-Type: application/json" \
             -H "Cookie: app_session_id=${{ secrets.SCHEDULED_TASK_COOKIE }}" \
             -d "{\"leagueId\": \"${{ matrix.league_id }}\"}" \
-            --max-time 60)
-          echo "HTTP Status: $RESPONSE"
-          cat /tmp/response.json
-          if [ "$RESPONSE" != "200" ]; then
-            echo "::warning::League ${{ matrix.league_id }} returned HTTP $RESPONSE"
+            --max-time 30 \
+            --retry 3 \
+            --retry-delay 5 \
+            --retry-http-errors)
+          echo "HTTP Status: $HTTP_STATUS"
+          cat /tmp/response.json || true
+          # 200 または 202 を成功とみなす
+          if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "202" ]; then
+            echo "::error::League ${{ matrix.league_id }} returned HTTP $HTTP_STATUS"
+            exit 1
           fi
 
-      - name: 結果を確認
-        if: always()
+  finish:
+    name: 同期ログを更新
+    runs-on: ubuntu-latest
+    needs: refresh
+    if: always()
+    steps:
+      - name: sync_log を完了状態に更新
         run: |
-          echo "League ${{ matrix.league_id }} 更新完了"
+          # 全リーグの処理完了後にsync_logを更新
+          # バックグラウンド処理が完了するまで少し待機
+          sleep 120
+          HTTP_STATUS=$(curl -s -o /tmp/finish.json -w "%{http_code}" \
+            -X POST "${{ secrets.SITE_URL }}/api/scheduled/sync-log-finish" \
+            -H "Content-Type: application/json" \
+            -H "Cookie: app_session_id=${{ secrets.SCHEDULED_TASK_COOKIE }}" \
+            --max-time 30)
+          echo "HTTP Status: $HTTP_STATUS"
+          cat /tmp/finish.json || true

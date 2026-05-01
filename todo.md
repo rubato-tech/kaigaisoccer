@@ -250,3 +250,11 @@
 - [x] スケジュールを6時間毎（6:00/12:00/18:00/0:00 JST）に設定
 - [x] league_idリストを現在の25リーグ（チャンピオンシップ/EFLカップ/スコットランド/オランダ/ベルギー/ポルトガル/トルコ/タサ等）に更新
 - [x] チェックポイント保存・GitHubへプッシュ
+
+## GitHub Actions 502/タイムアウトエラー修正（2026-05-02）
+
+- [x] /api/scheduled/refresh-leagueを202即時返却＋バックグラウンド処理に変更（CloudRunの60秒タイムアウト回避）
+- [x] leagueIdをreq.bodyから取得するよう修正（旧版はreq.query.idのみ）
+- [x] GitHub Actionsのcurlを--max-time 30・--retry 3に変更
+- [x] HTTP 200/202両方を成功とみなすよう修正
+- [x] 全リーグ完了後にsync-log-finishを呼ぶfinishジョブを追加（sleep 120でバックグラウンド処理完了を待機）
