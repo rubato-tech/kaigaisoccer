@@ -1,0 +1,69 @@
+name: 試合データ自動更新
+
+on:
+  schedule:
+    - cron: "0 21 * * *"   # JST 6:00
+    - cron: "0 3 * * *"    # JST 12:00
+    - cron: "0 9 * * *"    # JST 18:00
+    - cron: "0 15 * * *"   # JST 0:00 (翌日)
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    name: 試合データを更新（リーグ別）
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      max-parallel: 3
+      fail-fast: false
+      matrix:
+        league_id:
+          # === 欧州主要リーグ ===
+          - "4328"   # プレミアリーグ
+          - "4335"   # ラ・リーガ
+          - "4332"   # セリエA
+          - "4331"   # ブンデスリーガ
+          - "4334"   # リーグ・アン
+          - "4330"   # スコティッシュ・プレミアシップ
+          - "4337"   # エールディビジ
+          - "4338"   # ジュピラー・プロ・リーグ
+          - "4344"   # プリメイラ・リーガ
+          - "4339"   # スュペル・リグ（トルコ）
+          - "4329"   # チャンピオンシップ（イングランド2部）
+          # === 各国カップ戦 ===
+          - "4482"   # FAカップ
+          - "4570"   # EFLカップ（カラバオカップ）
+          - "4483"   # コパ・デル・レイ
+          - "4506"   # コッパ・イタリア
+          - "4485"   # DFBポカール
+          - "4484"   # クープ・ド・フランス
+          - "4510"   # タサ・デ・ポルトガル
+          # === UEFA大会 ===
+          - "4480"   # チャンピオンズリーグ
+          - "4481"   # ヨーロッパリーグ
+          - "5071"   # カンファレンスリーグ
+          # === 代表戦 ===
+          - "4429"   # W杯予選
+          - "4502"   # EURO予選
+          - "4490"   # UEFAネーションズリーグ
+          - "4395"   # 親善試合/その他
+
+    steps:
+      - name: リーグデータを更新 (${{ matrix.league_id }})
+        run: |
+          RESPONSE=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -X POST "${{ secrets.SITE_URL }}/api/scheduled/refresh-league" \
+            -H "Content-Type: application/json" \
+            -H "Cookie: app_session_id=${{ secrets.SCHEDULED_TASK_COOKIE }}" \
+            -d "{\"leagueId\": \"${{ matrix.league_id }}\"}" \
+            --max-time 60)
+          echo "HTTP Status: $RESPONSE"
+          cat /tmp/response.json
+          if [ "$RESPONSE" != "200" ]; then
+            echo "::warning::League ${{ matrix.league_id }} returned HTTP $RESPONSE"
+          fi
+
+      - name: 結果を確認
+        if: always()
+        run: |
+          echo "League ${{ matrix.league_id }} 更新完了"
