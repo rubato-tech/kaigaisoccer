@@ -38,6 +38,11 @@ async function startServer() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
 
+  // Simple health endpoint for Railway healthcheck (bypasses tRPC)
+  app.get("/health", (_req, res) => {
+    res.json({ ok: true });
+  });
+
   // スケジュール/手動同期用エンドポイント。
   // スケジュールタスクからは Manus OAuth Cookie (user ロール) が付与されるため、
   // Cookie が存在すれば認証済みとみなして処理を実行する。
