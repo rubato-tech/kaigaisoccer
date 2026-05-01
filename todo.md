@@ -214,3 +214,10 @@
 - [x] アフィリエイト各サービスの申請手順を詳細化
 - [x] VITE_GOOGLE_CLIENT_IDの取得手順をGoogle Cloud Console操作含めて詳細化
 - [x] 全変数の設定チェックリストを追加（必須/推奨/任意の3段階）
+
+## SEO修正（2026-05-01）
+
+- [x] Home.tsxのuseEffectでdocument.titleをタブ切替時に動的設定（30～60文字）
+- [x] index.htmlのdescriptionを180文字→ 88文字に短縮（50～160文字内）
+- [x] index.htmlのkeywordsを 25個→ 7個に削減（3～8個推奨内）
+- [x] TSErrorなし・テスト25件全合格

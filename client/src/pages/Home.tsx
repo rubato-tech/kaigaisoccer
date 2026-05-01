@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Clock, Globe2, Loader2, Newspaper, RefreshCw, Star, Trophy, UserRound } from "lucide-react";
 import { AdBanner } from "@/components/AdBanner";
 import { AdSenseBlock } from "@/components/AdSenseBlock";
@@ -174,6 +174,19 @@ export default function Home() {
   }, []);
 
   const isCurrentLoading = view === "favorites" ? favLoading : isLoading;
+
+  // タブに応じてdocument.titleを動的に設定
+  useEffect(() => {
+    const titles: Record<ViewKey, string> = {
+      euro_upcoming: "海外サッカー日程 | 欧州主要リーグ・CL・EL日程を日本時間で",
+      euro_past: "海外サッカー結果 | 欧州主要リーグ・CL・EL結果を日本時間で",
+      cup_upcoming: "カップ戦日程 | FAカップ・コパデルレイ・DFBポカール日程",
+      japanese_upcoming: "日本人選手出場試合 | 海外サッカー日程を日本時間で",
+      national_upcoming: "代表戦日程 | W杯予選・EURO・ネーションズリーグ日程",
+      favorites: "お気に入りチームの試合日程 | 海外サッカー日程",
+    };
+    document.title = titles[view];
+  }, [view]);
 
   return (
     <div className="min-h-screen">
