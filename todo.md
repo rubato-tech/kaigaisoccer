@@ -196,3 +196,8 @@
 ## Railway 移行手順書（2026-05-01）
 
 - [x] RAILWAY_DEPLOY_GUIDE.md を作成（PowerShellコマンド付き・全手順詳細）
+
+## Railwayデプロイエラー修正（2026-05-01）
+
+- [x] patches/wouter@3.7.1.patchファイルの欠落を修正（DockerfileのStage1・Stage2に`COPY patches/ ./patches/`を追加）
+- [ ] GitHubにプッシュしてRailway再デプロイ確認

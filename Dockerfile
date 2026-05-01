@@ -8,8 +8,9 @@ WORKDIR /app
 # pnpm をインストール
 RUN corepack enable && corepack prepare pnpm@10.4.1 --activate
 
-# 依存関係ファイルをコピー
+# 依存関係ファイルとパッチをコピー
 COPY package.json pnpm-lock.yaml ./
+COPY patches/ ./patches/
 
 # 本番依存 + 開発依存を全てインストール（ビルドに必要）
 RUN pnpm install --frozen-lockfile
@@ -30,8 +31,9 @@ WORKDIR /app
 # pnpm をインストール
 RUN corepack enable && corepack prepare pnpm@10.4.1 --activate
 
-# 依存関係ファイルをコピー
+# 依存関係ファイルとパッチをコピー（pnpm installがpatchesを必要とするため先にコピー）
 COPY package.json pnpm-lock.yaml ./
+COPY patches/ ./patches/
 
 # 本番依存のみインストール
 RUN pnpm install --frozen-lockfile --prod
