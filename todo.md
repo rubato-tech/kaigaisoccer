@@ -200,4 +200,4 @@
 ## Railwayデプロイエラー修正（2026-05-01）
 
 - [x] patches/wouter@3.7.1.patchファイルの欠落を修正（DockerfileのStage1・Stage2に`COPY patches/ ./patches/`を追加）
-- [ ] GitHubにプッシュしてRailway再デプロイ確認
+- [x] GitHubにプッシュしてRailway再デプロイ確認（vite.tsとindex.tsを動的インポートに変更してvite.configがビルドに含まれない修正）

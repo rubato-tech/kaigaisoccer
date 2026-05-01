@@ -3,19 +3,21 @@ import fs from "fs";
 import { type Server } from "http";
 import { nanoid } from "nanoid";
 import path from "path";
-import { createServer as createViteServer } from "vite";
-import viteConfig from "../../vite.config";
 
 export async function setupVite(app: Express, server: Server) {
+  // Dynamic imports to avoid bundling vite in production build
+  const { createServer: createViteServer } = await import("vite");
+
   const serverOptions = {
     middlewareMode: true,
     hmr: { server },
     allowedHosts: true as const,
   };
 
+  // Use configFile (default: vite.config.ts) instead of importing it statically
+  // to avoid bundling vite and its plugins into the production build
   const vite = await createViteServer({
-    ...viteConfig,
-    configFile: false,
+    configFile: undefined,
     server: serverOptions,
     appType: "custom",
   });
