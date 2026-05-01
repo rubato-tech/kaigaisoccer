@@ -192,3 +192,7 @@
 ## 完全ガイド作成（2026-05-01）
 
 - [x] COMPLETE_GUIDE.md を最新状態で作り直し（PowerShellコマンド・AdSense・アフィリエイト・移行手順）
+
+## Railway 移行手順書（2026-05-01）
+
+- [x] RAILWAY_DEPLOY_GUIDE.md を作成（PowerShellコマンド付き・全手順詳細）
