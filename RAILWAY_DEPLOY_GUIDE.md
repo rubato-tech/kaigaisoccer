@@ -13,7 +13,7 @@
 3. [Railway アカウント作成](#3-railway-アカウント作成)
 4. [MySQL データベースの作成](#4-mysql-データベースの作成)
 5. [アプリのデプロイ](#5-アプリのデプロイ)
-6. [環境変数の設定](#6-環境変数の設定)
+6. [環境変数の設定（最重要）](#6-環境変数の設定最重要)
 7. [データベースの初期化（テーブル作成）](#7-データベースの初期化テーブル作成)
 8. [自動更新（Cron）の設定](#8-自動更新cronの設定)
 9. [独自ドメイン（kaigaisoccer.com）の接続](#9-独自ドメインkaigaisoccercomの接続)
@@ -109,52 +109,205 @@ Railway は `package.json` の `build` と `start` スクリプトを自動検�
 
 ---
 
-## 6. 環境変数の設定
+## 6. 環境変数の設定（最重要）
 
-アプリサービスの **「Variables」** タブを開き、以下の変数を全て設定します。
+アプリサービスの **「Variables」** タブを開き、以下の変数を全て設定します。**全ての必須変数を設定しないとアプリが正常に動作しません。**
 
-### 必須変数（設定しないと動作しない）
+---
 
-| 変数名 | 値の取得方法 | 説明 |
+### 6-1. 必須変数（絶対に設定が必要）
+
+| 変数名 | 設定する値 | 説明 |
 |---|---|---|
-| `DATABASE_URL` | MySQL サービスの `MYSQL_URL` の値をコピー | DB 接続文字列 |
-| `JWT_SECRET` | 下記コマンドで生成 | セッション署名キー |
-| `NODE_ENV` | `production` と入力 | 本番モード |
-| `PORT` | `3000` と入力 | サーバーポート |
+| `DATABASE_URL` | MySQL サービスの `MYSQL_URL` の値 | DB 接続文字列 |
+| `JWT_SECRET` | 下記コマンドで生成したランダム文字列 | セッション署名キー |
+| `NODE_ENV` | `production` | 本番モード（この値がないとビルドが壊れる） |
+
+> **`PORT` は設定不要です。** Railway が自動的にポートを割り当てるため、手動設定すると競合する場合があります。削除または未設定のままにしてください。
+
+#### DATABASE_URL の設定方法
+
+1. Railway ダッシュボードで **MySQL サービス** をクリック
+2. **「Variables」** タブを開く
+3. `MYSQL_URL` の値（`mysql://user:password@host:port/dbname` 形式）をコピー
+4. **アプリサービス** の **「Variables」** タブを開く
+5. `DATABASE_URL` という名前で、コピーした値を貼り付ける
 
 #### JWT_SECRET の生成方法（PowerShell）
 
 ```powershell
 # ランダムな64文字の文字列を生成してクリップボードにコピー
 -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 64 | ForEach-Object {[char]$_}) | Set-Clipboard
-# クリップボードの内容を確認
+# クリップボードの内容を確認（これが JWT_SECRET の値）
 Get-Clipboard
 ```
 
-生成された文字列を `JWT_SECRET` の値として貼り付けてください。
+生成された文字列を `JWT_SECRET` の値として Railway に貼り付けてください。
 
-### Manus 認証関連（ログイン機能に必要）
+---
 
-> **重要**: Railway にデプロイしても、ログイン機能は引き続き Manus OAuth を使用します。Manus のプロジェクトを削除しない限り、ログイン機能は動作し続けます。詳細は [第11章](#11-manus-認証について重要) を参照してください。
+### 6-2. Manus 認証関連（ログイン機能に必要）
 
-| 変数名 | 値 | 取得方法 |
+**この設定がないとサーバーが起動時にエラーを出力します**（`OAUTH_SERVER_URL is not configured` というエラーが出る場合は、この変数が未設定です）。
+
+| 変数名 | 設定する値 | 取得方法 |
 |---|---|---|
-| `VITE_APP_ID` | Manus プロジェクトの App ID | Manus 管理UI → Settings → General |
-| `OAUTH_SERVER_URL` | `https://api.manus.im` | 固定値 |
-| `VITE_OAUTH_PORTAL_URL` | `https://manus.im` | 固定値 |
-| `OWNER_OPEN_ID` | Manus のユーザー ID | Manus 管理UI → Settings → General |
+| `OAUTH_SERVER_URL` | `https://api.manus.im` | **固定値**（そのままコピー） |
+| `VITE_OAUTH_PORTAL_URL` | `https://manus.im` | **固定値**（そのままコピー） |
+| `VITE_APP_ID` | Manus の App ID（英数字の文字列） | 下記「App ID の取得方法」参照 |
+| `OWNER_OPEN_ID` | Manus のユーザー ID | 下記「Owner Open ID の取得方法」参照 |
 
-### AdSense・アフィリエイト関連（任意）
+#### OAUTH_SERVER_URL と VITE_OAUTH_PORTAL_URL（固定値）
 
-| 変数名 | 値 | 説明 |
+この2つは変更不要の固定値です。以下をそのまま Railway に設定してください。
+
+```
+OAUTH_SERVER_URL = https://api.manus.im
+VITE_OAUTH_PORTAL_URL = https://manus.im
+```
+
+#### VITE_APP_ID の取得方法
+
+`VITE_APP_ID` は、このアプリが Manus の認証システムに登録されている ID です。
+
+1. **Manus のブラウザ画面**（このチャット画面）を開く
+2. 右上のパネルにある **「Management UI」** アイコンをクリック（または右側のパネルを開く）
+3. **「Settings」** → **「General」** を開く
+4. **「App ID」** という項目の値をコピーする
+   - 例: `RaqPabotonJ74A6GpXWVTN`（英数字22文字程度）
+5. Railway の `VITE_APP_ID` にこの値を貼り付ける
+
+#### OWNER_OPEN_ID の取得方法
+
+`OWNER_OPEN_ID` は、サイトオーナー（あなた）の Manus ユーザー ID です。
+
+1. 同じく Manus の **「Settings」** → **「General」** を開く
+2. **「Owner Open ID」** または **「User ID」** という項目の値をコピーする
+3. Railway の `OWNER_OPEN_ID` にこの値を貼り付ける
+
+> **補足**: `VITE_APP_ID` と `OWNER_OPEN_ID` が分からない場合は、Manus のチャットで「VITE_APP_IDとOWNER_OPEN_IDを教えてください」と質問すると確認できます。
+
+---
+
+### 6-3. AdSense 関連（任意・後から設定可）
+
+AdSense の審査に通過してから設定します。審査前は設定不要です（広告スロットは自動的に非表示になります）。
+
+#### VITE_ADSENSE_CLIENT（パブリッシャー ID）の取得方法
+
+1. https://www.google.com/adsense/ にアクセスしてログイン
+2. 左メニューの **「アカウント」** → **「アカウント情報」** を開く
+3. **「パブリッシャー ID」** に表示されている `ca-pub-XXXXXXXXXXXXXXXX` 形式の値をコピー
+4. Railway の `VITE_ADSENSE_CLIENT` に貼り付ける
+
+#### 広告スロット ID の取得方法
+
+広告スロット ID は、AdSense で広告ユニットを作成するたびに発行される数字（例: `1234567890`）です。
+
+1. AdSense 管理画面 → **「広告」** → **「広告ユニットごと」** をクリック
+2. **「新しい広告ユニットを作成」** → 広告の種類を選択
+3. 広告ユニット名を入力して **「作成して取得」** をクリック
+4. 表示されるコードの中に `data-ad-slot="XXXXXXXXXX"` という部分があり、この数字がスロット ID
+
+各スロットの用途と対応する変数名は以下の通りです。
+
+| 変数名 | 広告の種類 | 推奨サイズ | 配置場所 |
+|---|---|---|---|
+| `VITE_ADSENSE_SLOT_TOP` | ディスプレイ広告 | レスポンシブ | ページ最上部（ヘッダー下） |
+| `VITE_ADSENSE_SLOT_HORIZONTAL` | ディスプレイ広告 | 横長（728×90） | コンテンツ間 |
+| `VITE_ADSENSE_SLOT_INLINE` | インフィード広告 | ネイティブ | 試合リスト内 |
+| `VITE_ADSENSE_SLOT_RECTANGLE` | ディスプレイ広告 | レクタングル（300×250） | サイドバー相当 |
+| `VITE_ADSENSE_SLOT_INFEED` | インフィード広告 | ネイティブ | フィード内 |
+
+> **注意**: 広告ユニットは1つずつ作成する必要があります。最初は `VITE_ADSENSE_SLOT_TOP` 用に1つだけ作成し、動作確認後に残りを追加することを推奨します。
+
+---
+
+### 6-4. アフィリエイト関連（任意・後から設定可）
+
+アフィリエイト URL を設定すると、サイト内に DAZN・楽天・Amazon・U-NEXT の広告バナーが表示されます。未設定の場合は非表示になります。
+
+#### DAZN アフィリエイト（A8.net 経由）
+
+1. https://www.a8.net/ にアクセスして無料会員登録
+2. ログイン後、上部メニューの **「プログラム」** → **「プログラム検索」** をクリック
+3. 検索欄に「DAZN」と入力して検索
+4. DAZN のプログラムが表示されたら **「提携申請」** をクリック（即時承認の場合が多い）
+5. 承認後、DAZN のプログラムページで **「広告リンク」** → **「テキストリンク」** を選択
+6. 表示されたリンク URL（`https://px.a8.net/...` 形式）をコピー
+7. Railway の `VITE_AFFILIATE_STREAMING_URL` に貼り付ける
+
+| 変数名 | 設定する値 | 説明 |
 |---|---|---|
-| `VITE_ADSENSE_CLIENT` | `ca-pub-XXXXXXXXXXXXXXXX` | AdSense パブリッシャー ID |
-| `VITE_ADSENSE_SLOT_TOP` | 広告ユニット ID | 横長バナー（ページ上部） |
-| `VITE_ADSENSE_SLOT_HORIZONTAL` | 広告ユニット ID | 横長バナー（コンテンツ間） |
-| `VITE_ADSENSE_SLOT_INLINE` | 広告ユニット ID | インフィード広告 |
-| `VITE_ADSENSE_SLOT_RECTANGLE` | 広告ユニット ID | レクタングル広告 |
-| `VITE_ADSENSE_SLOT_INFEED` | 広告ユニット ID | インフィード広告 |
-| `VITE_GOOGLE_CLIENT_ID` | Google Cloud Console の OAuth クライアント ID | Googleカレンダー連携 |
+| `VITE_AFFILIATE_STREAMING_URL` | A8.net の DAZN アフィリエイトリンク URL | クリックで収益発生 |
+| `VITE_AFFILIATE_STREAMING_BANNER` | バナー画像の URL（任意） | バナー表示用 |
+| `VITE_AFFILIATE_STREAMING_NAME` | `DAZN` | 表示名 |
+
+#### Amazon アソシエイト
+
+1. https://affiliate.amazon.co.jp/ にアクセスして申請（審査あり・数日かかる）
+2. 承認後、アソシエイト ID（例: `kaigaisoccer-22`）が発行される
+3. Railway の `VITE_AFFILIATE_AMAZON_TAG` にこの ID を設定する
+
+#### 楽天アフィリエイト
+
+1. https://affiliate.rakuten.co.jp/ にアクセスして登録（即時）
+2. アフィリエイト ID（数字）が発行される
+3. Railway の `VITE_AFFILIATE_RAKUTEN_ID` に設定する
+
+#### U-NEXT（A8.net 経由）
+
+DAZN と同様に A8.net で「U-NEXT」を検索して提携申請します。取得したリンク URL を `VITE_AFFILIATE_UNEXT_URL` に設定します。
+
+---
+
+### 6-5. Google カレンダー連携（任意・後から設定可）
+
+Google カレンダーへの直接追加機能を有効にするには、Google Cloud Console で OAuth クライアント ID を取得する必要があります。
+
+#### VITE_GOOGLE_CLIENT_ID の取得方法
+
+1. https://console.cloud.google.com/ にアクセスしてログイン（Google アカウントが必要）
+2. 上部の **「プロジェクトを選択」** → **「新しいプロジェクト」** をクリック
+3. プロジェクト名（例: `kaigaisoccer`）を入力して **「作成」** をクリック
+4. 左メニューの **「API とサービス」** → **「ライブラリ」** をクリック
+5. 検索欄に「Google Calendar API」と入力して選択 → **「有効にする」** をクリック
+6. 左メニューの **「API とサービス」** → **「認証情報」** をクリック
+7. **「認証情報を作成」** → **「OAuth クライアント ID」** を選択
+8. **「アプリケーションの種類」** で **「ウェブ アプリケーション」** を選択
+9. **「承認済みの JavaScript 生成元」** に以下を追加する
+   - `https://kaigaisoccer.com`（本番ドメイン）
+   - `https://あなたのRailway URL.up.railway.app`（Railway の URL）
+10. **「作成」** をクリック
+11. 表示された **「クライアント ID」**（`XXXXXXXXXX.apps.googleusercontent.com` 形式）をコピー
+12. Railway の `VITE_GOOGLE_CLIENT_ID` に貼り付ける
+
+> **注意**: Google カレンダー連携は設定しなくてもサイトの主要機能（試合日程表示）は動作します。お気に入り機能のカレンダー連携のみ影響します。
+
+---
+
+### 6-6. 全変数の設定チェックリスト
+
+Railway の **「Variables」** タブで以下を確認してください。
+
+**必須（これがないと動かない）:**
+- [ ] `DATABASE_URL` — MySQL の接続文字列
+- [ ] `JWT_SECRET` — ランダム文字列（64文字推奨）
+- [ ] `NODE_ENV` — `production`
+- [ ] `OAUTH_SERVER_URL` — `https://api.manus.im`
+- [ ] `VITE_OAUTH_PORTAL_URL` — `https://manus.im`
+- [ ] `VITE_APP_ID` — Manus の App ID
+
+**推奨（設定すると機能が有効になる）:**
+- [ ] `OWNER_OPEN_ID` — Manus のユーザー ID
+
+**任意（後から設定可）:**
+- [ ] `VITE_ADSENSE_CLIENT` — AdSense パブリッシャー ID
+- [ ] `VITE_ADSENSE_SLOT_TOP` — 広告スロット ID
+- [ ] `VITE_AFFILIATE_STREAMING_URL` — DAZN アフィリエイト URL
+- [ ] `VITE_GOOGLE_CLIENT_ID` — Google カレンダー連携用
+
+> **`PORT` は設定しないでください。** Railway が自動的に割り当てます。設定すると競合する場合があります。
 
 ### 全変数を設定後、再デプロイ
 
@@ -281,27 +434,11 @@ GitHub リポジトリの **Settings → Secrets and variables → Actions** で
 
 > **審査のポイント**: サイトにオリジナルコンテンツが必要です。このサイトは試合日程という実用的なコンテンツがあるため、審査通過の可能性は高いです。プライバシーポリシーとお問い合わせページはすでに実装済みです。
 
+詳細な取得方法は [第6章の AdSense セクション](#6-3-adsense-関連任意後から設定可) を参照してください。
+
 ### DAZN アフィリエイトの設定手順
 
-1. https://www.a8.net/ にアクセスして無料会員登録
-2. ログイン後、**「プログラム検索」** で「DAZN」を検索
-3. **「提携申請」** をクリック（審査なし・即時承認の場合が多い）
-4. 承認後、**「広告リンク」** からバナー画像の URL とリンク URL を取得
-5. Railway の環境変数に設定する
-
-| 変数名 | 設定値 |
-|---|---|
-| `VITE_AFFILIATE_STREAMING_URL` | A8.net で取得したアフィリエイトリンク URL |
-| `VITE_AFFILIATE_STREAMING_BANNER` | バナー画像の URL |
-| `VITE_AFFILIATE_STREAMING_NAME` | `DAZN` |
-
-### その他のアフィリエイト（任意）
-
-| サービス | 申請先 | 変数名 |
-|---|---|---|
-| Amazon アソシエイト | https://affiliate.amazon.co.jp/ | `VITE_AFFILIATE_AMAZON_TAG` |
-| 楽天アフィリエイト | https://affiliate.rakuten.co.jp/ | `VITE_AFFILIATE_RAKUTEN_ID` |
-| U-NEXT | https://www.a8.net/ で検索 | `VITE_AFFILIATE_UNEXT_URL` |
+詳細な取得方法は [第6章のアフィリエイトセクション](#6-4-アフィリエイト関連任意後から設定可) を参照してください。
 
 ---
 
@@ -323,7 +460,7 @@ GitHub リポジトリの **Settings → Secrets and variables → Actions** で
 
 ### Manus プロジェクトの App ID の確認方法
 
-1. Manus の管理UI を開く
+1. Manus の管理UI を開く（このチャット画面の右側パネル）
 2. **Settings → General** を開く
 3. **「App ID」** の値をコピーして Railway の `VITE_APP_ID` に設定
 
@@ -382,12 +519,27 @@ Railway Hobby プランは **$5/月固定**で、その中に $5 分の使用量
 
 ## 14. トラブルシューティング
 
+### `OAUTH_SERVER_URL is not configured` エラーが出る
+
+**原因**: `OAUTH_SERVER_URL` 環境変数が未設定です。
+
+**対処**: Railway の Variables タブで以下を追加してください。
+
+```
+OAUTH_SERVER_URL = https://api.manus.im
+```
+
+### `Missing session cookie` がログに大量に出る
+
+**原因**: これは**正常な動作**です。ログインしていないユーザーがページを訪問するたびに出力されます。エラーではありません。
+
 ### デプロイが失敗する
 
 **確認事項:**
 - Railway の **「Deployments」** タブでエラーログを確認
 - `DATABASE_URL` が正しく設定されているか確認
 - `NODE_ENV=production` が設定されているか確認
+- `PORT` を設定している場合は**削除**してください（Railway が自動設定）
 
 ### ログインできない
 

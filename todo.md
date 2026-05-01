@@ -201,3 +201,16 @@
 
 - [x] patches/wouter@3.7.1.patchファイルの欠落を修正（DockerfileのStage1・Stage2に`COPY patches/ ./patches/`を追加）
 - [x] GitHubにプッシュしてRailway再デプロイ確認（vite.tsとindex.tsを動的インポートに変更してvite.configがビルドに含まれない修正）
+
+## RAILWAY_DEPLOY_GUIDE.md 詳細化（2026-05-01）
+
+- [x] PORT設定が不要であることを明記（Railwayが自動割り当て）
+- [x] OAUTH_SERVER_URLエラーの原因と対処をトラブルシューティングに追加
+- [x] Missing session cookieが正常動作であることを明記
+- [x] VITE_APP_IDの取得方法をスクリーンショット付きで詳細化
+- [x] OWNER_OPEN_IDの取得方法を詳細化
+- [x] OAUTH_SERVER_URL・VITE_OAUTH_PORTAL_URLが固定値であることを明記
+- [x] AdSenseスロットIDの取得手順をステップバイステップで記載
+- [x] アフィリエイト各サービスの申請手順を詳細化
+- [x] VITE_GOOGLE_CLIENT_IDの取得手順をGoogle Cloud Console操作含めて詳細化
+- [x] 全変数の設定チェックリストを追加（必須/推奨/任意の3段階）
