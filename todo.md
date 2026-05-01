@@ -221,3 +221,9 @@
 - [x] index.htmlのdescriptionを180文字→ 88文字に短縮（50～160文字内）
 - [x] index.htmlのkeywordsを 25個→ 7個に削減（3～8個推奨内）
 - [x] TSErrorなし・テスト25件全合格
+
+## Railwayヘルスチェック修正（2026-05-01）
+
+- [x] server/_core/index.tsにシンプルな GET /health ルートを追加（tRPCより前に配置）
+- [x] railway.jsonのhealthcheckPathを/api/trpc/healthから/healthに修正
+- [x] TSエラーなし・テスト25件全合格
