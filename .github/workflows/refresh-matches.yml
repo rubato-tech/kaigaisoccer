@@ -56,10 +56,7 @@ jobs:
             -H "Content-Type: application/json" \
             -H "Cookie: app_session_id=${{ secrets.SCHEDULED_TASK_COOKIE }}" \
             -d "{\"leagueId\": \"${{ matrix.league_id }}\"}" \
-            --max-time 30 \
-            --retry 3 \
-            --retry-delay 5 \
-            --retry-http-errors)
+            --max-time 30)
           echo "HTTP Status: $HTTP_STATUS"
           cat /tmp/response.json || true
           if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "202" ]; then
