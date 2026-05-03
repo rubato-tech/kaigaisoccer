@@ -106,11 +106,41 @@ function formatRelative(d: Date | null | undefined): string {
   return `${day}日前`;
 }
 
+const TAB_STORAGE_KEY = "kaigaisoccer_last_tab";
+
+function getInitialView(): ViewKey {
+  // 1. URLクエリパラメータを優先
+  const params = new URLSearchParams(window.location.search);
+  const tabParam = params.get("tab") as ViewKey | null;
+  if (tabParam && tabParam in VIEWS) return tabParam;
+  // 2. LocalStorageの最終選択値
+  try {
+    const saved = localStorage.getItem(TAB_STORAGE_KEY) as ViewKey | null;
+    if (saved && saved in VIEWS) return saved;
+  } catch {
+    // プライベートブラウジング等でLocalStorageが使えない場合は無視
+  }
+  // 3. デフォルト
+  return "euro_upcoming";
+}
+
 export default function Home() {
-  const [view, setView] = useState<ViewKey>("euro_upcoming");
+  const [view, setView] = useState<ViewKey>(getInitialView);
   const [filter, setFilter] = useState<FilterState>(EMPTY_FILTER);
   const [showLocalTime, setShowLocalTime] = useState(false);
   const spec = VIEWS[view];
+
+  // タブ切替を一元管理：URL / LocalStorage / viewを常に同期
+  const changeView = (key: ViewKey, pushHistory = true) => {
+    setView(key);
+    setFilter(EMPTY_FILTER);
+    try { localStorage.setItem(TAB_STORAGE_KEY, key); } catch { /* ignore */ }
+    if (pushHistory) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", key);
+      window.history.pushState({}, "", url.toString());
+    }
+  };
 
   // 通常タブのデータ取得（favoritesタブ以外）
   const { data, error, isLoading, isFetching, refetch } = trpc.matches.list.useQuery(
@@ -175,6 +205,20 @@ export default function Home() {
 
   const isCurrentLoading = view === "favorites" ? favLoading : isLoading;
 
+  // ブラウザの「戻る」「進む」ボタンでタブを同期
+  useEffect(() => {
+    const handlePopState = () => {
+      // URL変化後に優先順位（URL > LocalStorage > デフォルト）で再計算
+      const resolved = getInitialView();
+      setView(resolved);
+      setFilter(EMPTY_FILTER);
+      // popstate時は履歴を追加せず、LocalStorageのみ更新
+      try { localStorage.setItem(TAB_STORAGE_KEY, resolved); } catch { /* ignore */ }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+
   // タブに応じてdocument.titleを動的に設定
   useEffect(() => {
     const titles: Record<ViewKey, string> = {
@@ -207,7 +251,7 @@ export default function Home() {
                 return (
                   <button
                     key={key}
-                    onClick={() => { setView(key); setFilter(EMPTY_FILTER); }}
+                    onClick={() => changeView(key)}
                     className={[
                       "flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-3.5 text-sm font-semibold transition-colors sm:px-4",
                       isActive
