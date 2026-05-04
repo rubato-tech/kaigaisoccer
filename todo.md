@@ -265,3 +265,10 @@
 - [x] LocalStorageにタブの最終選択値を保存（再訪問時に復元）
 - [x] 優先順位：URLパラメータ > LocalStorage > デフォルト（最初のタブ）
 - [x] ブラウザの「戻る」ボタンでタブ履歴を正しく扱う
+
+## OGP/メタタグとリーグフィルタURL対応（2026-05-03）
+
+- [x] OGP/メタタグをタブに応じて動的に変更（og:title, og:description, og:url）
+- [x] リーグフィルタをURLクエリパラメータ（?league=4331）で制御
+- [x] ?tab=xxx&league=xxxx の組み合わせでブックマーク・シェア可能にする
+- [x] LocalStorageにリーグフィルタの最終選択値も保存

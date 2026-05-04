@@ -107,6 +107,81 @@ function formatRelative(d: Date | null | undefined): string {
 }
 
 const TAB_STORAGE_KEY = "kaigaisoccer_last_tab";
+const LEAGUE_STORAGE_KEY = "kaigaisoccer_last_league";
+
+// OGP/メタタグをタブに応じて動的に書き換えるヘルパー
+function updateMetaTags(view: ViewKey, leagueIds: Set<string>) {
+  const siteUrl = "https://kaigaisoccer.com";
+  const ogDescriptions: Record<ViewKey, string> = {
+    euro_upcoming: "プレミアリーグ・ラ・リーガ・セリエA・ブンデスリーガ・リーグアンなど欧州主要リーグとCL・EL・ECLの試合日程を日本時間で一覧。",
+    euro_past: "欧州主要リーグおよびCL・EL・ECLの直近21日間の試合結果をスコア付きで一覧表示。",
+    cup_upcoming: "FAカップ・コパ・デル・レイ・DFBポカール・コッパ・イタリア・クープ・ド・フランスなど各国カップ戦の日程を日本時間で。",
+    japanese_upcoming: "久保建英・鎌田大地・遠藤航・三笘薫など日本人選手が在籍する欧州クラブの今後の試合日程を日本時間で。",
+    national_upcoming: "FIFAワールドカップ予選・UEFA EURO・ネーションズリーグなど各国代表チームの試合スケジュール。",
+    favorites: "お気に入り登録したチームの今後30日間の試合を日本時間でまとめて表示。",
+  };
+
+  const titles: Record<ViewKey, string> = {
+    euro_upcoming: "海外サッカー日程 | 欧州主要リーグ・CL・EL日程を日本時間で",
+    euro_past: "海外サッカー結果 | 欧州主要リーグ・CL・EL結果を日本時間で",
+    cup_upcoming: "カップ戦日程 | FAカップ・コパデルレイ・DFBポカール日程",
+    japanese_upcoming: "日本人選手出場試合 | 海外サッカー日程を日本時間で",
+    national_upcoming: "代表戦日程 | W杯予選・EURO・ネーションズリーグ日程",
+    favorites: "お気に入りチームの試合日程 | 海外サッカー日程",
+  };
+
+  const title = titles[view];
+  const description = ogDescriptions[view];
+  const params = new URLSearchParams();
+  params.set("tab", view);
+  if (leagueIds.size > 0) params.set("league", Array.from(leagueIds).join(","));
+  const canonicalUrl = `${siteUrl}/?${params.toString()}`;
+
+  // document.title
+  document.title = title;
+
+  // og:title
+  let ogTitle = document.querySelector<HTMLMetaElement>("meta[property='og:title']");
+  if (!ogTitle) { ogTitle = document.createElement("meta"); ogTitle.setAttribute("property", "og:title"); document.head.appendChild(ogTitle); }
+  ogTitle.content = title;
+
+  // og:description
+  let ogDesc = document.querySelector<HTMLMetaElement>("meta[property='og:description']");
+  if (!ogDesc) { ogDesc = document.createElement("meta"); ogDesc.setAttribute("property", "og:description"); document.head.appendChild(ogDesc); }
+  ogDesc.content = description;
+
+  // og:url
+  let ogUrl = document.querySelector<HTMLMetaElement>("meta[property='og:url']");
+  if (!ogUrl) { ogUrl = document.createElement("meta"); ogUrl.setAttribute("property", "og:url"); document.head.appendChild(ogUrl); }
+  ogUrl.content = canonicalUrl;
+
+  // meta description
+  let metaDesc = document.querySelector<HTMLMetaElement>("meta[name='description']");
+  if (!metaDesc) { metaDesc = document.createElement("meta"); metaDesc.setAttribute("name", "description"); document.head.appendChild(metaDesc); }
+  metaDesc.content = description;
+
+  // canonical
+  let canonical = document.querySelector<HTMLLinkElement>("link[rel='canonical']");
+  if (!canonical) { canonical = document.createElement("link"); canonical.rel = "canonical"; document.head.appendChild(canonical); }
+  canonical.href = canonicalUrl;
+}
+
+function getInitialLeagues(): Set<string> {
+  const params = new URLSearchParams(window.location.search);
+  const leagueParam = params.get("league");
+  if (leagueParam) {
+    const ids = leagueParam.split(",").filter(Boolean);
+    if (ids.length > 0) return new Set(ids);
+  }
+  try {
+    const saved = localStorage.getItem(LEAGUE_STORAGE_KEY);
+    if (saved) {
+      const ids = JSON.parse(saved) as string[];
+      if (Array.isArray(ids) && ids.length > 0) return new Set(ids);
+    }
+  } catch { /* ignore */ }
+  return new Set();
+}
 
 function getInitialView(): ViewKey {
   // 1. URLクエリパラメータを優先
@@ -126,20 +201,49 @@ function getInitialView(): ViewKey {
 
 export default function Home() {
   const [view, setView] = useState<ViewKey>(getInitialView);
-  const [filter, setFilter] = useState<FilterState>(EMPTY_FILTER);
+  const [filter, setFilter] = useState<FilterState>(() => ({
+    ...EMPTY_FILTER,
+    selectedLeagueIds: getInitialLeagues(),
+  }));
   const [showLocalTime, setShowLocalTime] = useState(false);
   const spec = VIEWS[view];
+
+  // URL更新を一元管理（タブ・リーグフィルタ両対応）
+  const updateUrl = (tabKey: ViewKey, leagueIds: Set<string>, pushHistory: boolean) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", tabKey);
+    if (leagueIds.size > 0) {
+      url.searchParams.set("league", Array.from(leagueIds).join(","));
+    } else {
+      url.searchParams.delete("league");
+    }
+    if (pushHistory) {
+      window.history.pushState({}, "", url.toString());
+    } else {
+      window.history.replaceState({}, "", url.toString());
+    }
+  };
 
   // タブ切替を一元管理：URL / LocalStorage / viewを常に同期
   const changeView = (key: ViewKey, pushHistory = true) => {
     setView(key);
     setFilter(EMPTY_FILTER);
     try { localStorage.setItem(TAB_STORAGE_KEY, key); } catch { /* ignore */ }
-    if (pushHistory) {
-      const url = new URL(window.location.href);
-      url.searchParams.set("tab", key);
-      window.history.pushState({}, "", url.toString());
-    }
+    try { localStorage.removeItem(LEAGUE_STORAGE_KEY); } catch { /* ignore */ }
+    updateUrl(key, new Set(), pushHistory);
+  };
+
+  // リーグフィルタ変更時にURLとLocalStorageを同期
+  const handleFilterChange = (f: FilterState) => {
+    setFilter(f);
+    try {
+      if (f.selectedLeagueIds.size > 0) {
+        localStorage.setItem(LEAGUE_STORAGE_KEY, JSON.stringify(Array.from(f.selectedLeagueIds)));
+      } else {
+        localStorage.removeItem(LEAGUE_STORAGE_KEY);
+      }
+    } catch { /* ignore */ }
+    updateUrl(view, f.selectedLeagueIds, false);
   };
 
   // 通常タブのデータ取得（favoritesタブ以外）
@@ -205,32 +309,23 @@ export default function Home() {
 
   const isCurrentLoading = view === "favorites" ? favLoading : isLoading;
 
-  // ブラウザの「戻る」「進む」ボタンでタブを同期
+  // ブラウザの「戻る」「進む」ボタンでタブ・リーグフィルタを同期
   useEffect(() => {
     const handlePopState = () => {
-      // URL変化後に優先順位（URL > LocalStorage > デフォルト）で再計算
-      const resolved = getInitialView();
-      setView(resolved);
-      setFilter(EMPTY_FILTER);
-      // popstate時は履歴を追加せず、LocalStorageのみ更新
-      try { localStorage.setItem(TAB_STORAGE_KEY, resolved); } catch { /* ignore */ }
+      const resolvedTab = getInitialView();
+      const resolvedLeagues = getInitialLeagues();
+      setView(resolvedTab);
+      setFilter({ ...EMPTY_FILTER, selectedLeagueIds: resolvedLeagues });
+      try { localStorage.setItem(TAB_STORAGE_KEY, resolvedTab); } catch { /* ignore */ }
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
-  // タブに応じてdocument.titleを動的に設定
+  // タブ・リーグフィルタに応じてOGP/メタタグを動的に更新
   useEffect(() => {
-    const titles: Record<ViewKey, string> = {
-      euro_upcoming: "海外サッカー日程 | 欧州主要リーグ・CL・EL日程を日本時間で",
-      euro_past: "海外サッカー結果 | 欧州主要リーグ・CL・EL結果を日本時間で",
-      cup_upcoming: "カップ戦日程 | FAカップ・コパデルレイ・DFBポカール日程",
-      japanese_upcoming: "日本人選手出場試合 | 海外サッカー日程を日本時間で",
-      national_upcoming: "代表戦日程 | W杯予選・EURO・ネーションズリーグ日程",
-      favorites: "お気に入りチームの試合日程 | 海外サッカー日程",
-    };
-    document.title = titles[view];
-  }, [view]);
+    updateMetaTags(view, filter.selectedLeagueIds);
+  }, [view, filter.selectedLeagueIds]);
 
   return (
     <div className="min-h-screen">
@@ -314,7 +409,7 @@ export default function Home() {
             matches={filtered}
             totalMatches={merged.length}
             filter={filter}
-            onFilterChange={setFilter}
+            onFilterChange={handleFilterChange}
             availableLeagues={availableLeagues}
             showScore={spec.showScore}
             emptyText={spec.emptyText}
