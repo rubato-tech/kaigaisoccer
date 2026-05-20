@@ -1,0 +1,31 @@
+{
+  "query": "\nSELECT leagueId, category, COUNT(*) as cnt,\n  MIN(FROM_UNIXTIME(kickoffUtcMs/1000)) as earliest,\n  MAX(FROM_UNIXTIME(kickoffUtcMs/1000)) as latest\nFROM matches\nWHERE category = 'uefa'\nGROUP BY leagueId, category\nORDER BY leagueId;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute \nSELECT leagueId, category, COUNT(*) as cnt,\n  MIN(FROM_UNIXTIME(kickoffUtcMs/1000)) as earliest,\n  MAX(FROM_UNIXTIME(kickoffUtcMs/1000)) as latest\nFROM matches\nWHERE category = 'uefa'\nGROUP BY leagueId, category\nORDER BY leagueId;\n",
+  "rows": [
+    {
+      "leagueId": "4480",
+      "category": "uefa",
+      "cnt": "156",
+      "earliest": "2025-09-16 16:45:00.0000",
+      "latest": "2026-05-06 19:00:00.0000"
+    },
+    {
+      "leagueId": "4481",
+      "category": "uefa",
+      "cnt": "120",
+      "earliest": "2025-09-24 16:45:00.0000",
+      "latest": "2026-05-07 19:00:00.0000"
+    },
+    {
+      "leagueId": "5071",
+      "category": "uefa",
+      "cnt": "84",
+      "earliest": "2025-11-06 17:45:00.0000",
+      "latest": "2026-05-07 19:00:00.0000"
+    }
+  ],
+  "messages": [],
+  "stdout": "leagueId\tcategory\tcnt\tearliest\tlatest\n4480\tuefa\t156\t2025-09-16 16:45:00.0000\t2026-05-06 19:00:00.0000\n4481\tuefa\t120\t2025-09-24 16:45:00.0000\t2026-05-07 19:00:00.0000\n5071\tuefa\t84\t2025-11-06 17:45:00.0000\t2026-05-07 19:00:00.0000\n",
+  "stderr": "",
+  "execution_time_ms": 1961
+}

@@ -15,15 +15,17 @@ import { toJstParts } from "@shared/datetime";
 import { applyMatchFilter } from "@shared/matchFilter";
 import { leagueDisplayJp } from "@shared/teamNames";
 
-type ViewKey = "euro_upcoming" | "euro_past" | "cup_upcoming" | "japanese_upcoming" | "national_upcoming" | "favorites";
+type ViewKey = "euro_upcoming" | "euro_past" | "japanese_upcoming" | "national_upcoming" | "favorites";
+
+type MatchCategory = "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player";
 
 interface ViewSpec {
   label: string;
   shortLabel: string;
   icon: React.ElementType;
-  category: "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player" | "favorites";
+  /** 単一または複数カテゴリ（配列の場合OR条件）。"favorites"は別処理 */
+  category: MatchCategory | MatchCategory[] | "favorites";
   scope: "upcoming" | "past";
-  includeUefa?: boolean;
   showScore: boolean;
   emptyText: string;
   description: string;
@@ -34,33 +36,23 @@ const VIEWS: Record<ViewKey, ViewSpec> = {
     label: "欧州日程",
     shortLabel: "欧州日程",
     icon: CalendarDays,
-    category: "euro_league",
+    // リーグ戦＋UEFAカップ（CL/EL/ECL）＋各国カップ戦を一括表示
+    category: ["euro_league", "uefa", "cup"],
     scope: "upcoming",
-    includeUefa: true,
     showScore: false,
     emptyText: "まだ予定されている試合はありません。",
-    description: "欧州主要リーグおよびUEFA大会の今後14日間の試合を日本時間で表示します。",
+    description: "欧州主要リーグ・CL・EL・ECL・各国カップ戦の今後14日間の試合を日本時間で一括表示。",
   },
   euro_past: {
     label: "欧州結果",
     shortLabel: "欧州結果",
     icon: Trophy,
-    category: "euro_league",
+    // 結果も同様に全カテゴリ一括
+    category: ["euro_league", "uefa", "cup"],
     scope: "past",
-    includeUefa: true,
     showScore: true,
     emptyText: "結果データがまだ取得されていません。",
-    description: "欧州主要リーグおよびUEFA大会の直近21日間の試合結果。スコア付きで一覧表示。",
-  },
-  cup_upcoming: {
-    label: "カップ戦",
-    shortLabel: "カップ戦",
-    icon: Trophy,
-    category: "cup",
-    scope: "upcoming",
-    showScore: false,
-    emptyText: "カップ戦の予定は現在ありません。",
-    description: "FAカップ・コパ・デル・レイ・DFBポカール・コッパ・イタリア・クープ・ド・フランスなど各国カップ戦の日程。",
+    description: "欧州主要リーグ・CL・EL・ECL・各国カップ戦の直近21日間の試合結果。スコア付きで一覧表示。",
   },
   japanese_upcoming: {
     label: "日本人選手",
@@ -113,18 +105,16 @@ const LEAGUE_STORAGE_KEY = "kaigaisoccer_last_league";
 function updateMetaTags(view: ViewKey, leagueIds: Set<string>) {
   const siteUrl = "https://kaigaisoccer.com";
   const ogDescriptions: Record<ViewKey, string> = {
-    euro_upcoming: "プレミアリーグ・ラ・リーガ・セリエA・ブンデスリーガ・リーグアンなど欧州主要リーグとCL・EL・ECLの試合日程を日本時間で一覧。",
-    euro_past: "欧州主要リーグおよびCL・EL・ECLの直近21日間の試合結果をスコア付きで一覧表示。",
-    cup_upcoming: "FAカップ・コパ・デル・レイ・DFBポカール・コッパ・イタリア・クープ・ド・フランスなど各国カップ戦の日程を日本時間で。",
+    euro_upcoming: "プレミアリーグ・ラ・リーガ・セリエA・ブンデスリーガ・リーグアンなど欧州主要リーグとCL・EL・ECL・各国カップ戦の試合日程を日本時間で一括表示。",
+    euro_past: "欧州主要リーグ・CL・EL・ECL・各国カップ戦の直近21日間の試合結果をスコア付きで一覧表示。",
     japanese_upcoming: "久保建英・鎌田大地・遠藤航・三笘薫など日本人選手が在籍する欧州クラブの今後の試合日程を日本時間で。",
     national_upcoming: "FIFAワールドカップ予選・UEFA EURO・ネーションズリーグなど各国代表チームの試合スケジュール。",
     favorites: "お気に入り登録したチームの今後30日間の試合を日本時間でまとめて表示。",
   };
 
   const titles: Record<ViewKey, string> = {
-    euro_upcoming: "海外サッカー日程 | 欧州主要リーグ・CL・EL日程を日本時間で",
-    euro_past: "海外サッカー結果 | 欧州主要リーグ・CL・EL結果を日本時間で",
-    cup_upcoming: "カップ戦日程 | FAカップ・コパデルレイ・DFBポカール日程",
+    euro_upcoming: "海外サッカー日程 | 欧州リーグ・CL・EL・ECL・カップ戦を日本時間で",
+    euro_past: "海外サッカー結果 | 欧州リーグ・CL・EL・ECL・カップ戦結果を日本時間で",
     japanese_upcoming: "日本人選手出場試合 | 海外サッカー日程を日本時間で",
     national_upcoming: "代表戦日程 | W杯予選・EURO・ネーションズリーグ日程",
     favorites: "お気に入りチームの試合日程 | 海外サッカー日程",
@@ -246,20 +236,15 @@ export default function Home() {
     updateUrl(view, f.selectedLeagueIds, false);
   };
 
-  // 通常タブのデータ取得（favoritesタブ以外）
+  // 通常タブのデータ取得（favoritesタブ以外）—複数カテゴリは配列で渡す
+  const queryCategory = spec.category === "favorites"
+    ? ("euro_league" as const)
+    : (spec.category as "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player" | ("euro_league" | "cup" | "uefa" | "national_team" | "japanese_player")[]);
+
   const { data, error, isLoading, isFetching, refetch } = trpc.matches.list.useQuery(
-    { category: spec.category === "favorites" ? "euro_league" : spec.category, scope: spec.scope },
+    { category: queryCategory, scope: spec.scope },
     {
       enabled: spec.category !== "favorites",
-      staleTime: 60_000,
-    },
-  );
-
-  // UEFA を別途取得して欧州日程／結果に合流
-  const { data: uefaData, error: uefaError } = trpc.matches.list.useQuery(
-    { category: "uefa", scope: spec.scope },
-    {
-      enabled: !!spec.includeUefa,
       staleTime: 60_000,
     },
   );
@@ -273,14 +258,12 @@ export default function Home() {
     },
   );
 
-  const queryError = error ?? uefaError ?? (view === "favorites" ? favError : null) ?? null;
+  const queryError = error ?? (view === "favorites" ? favError : null) ?? null;
 
   const merged = useMemo(() => {
     if (view === "favorites") return favData ?? [];
-    const list = [...(data?.matches ?? [])];
-    if (spec.includeUefa && uefaData?.matches) list.push(...uefaData.matches);
-    return list;
-  }, [view, data?.matches, uefaData?.matches, spec.includeUefa, favData]);
+    return data?.matches ?? [];
+  }, [view, data?.matches, favData]);
 
   // 現在のビューに含まれているリーグ一覧（フィルタチップ用）
   const availableLeagues = useMemo(() => {

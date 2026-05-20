@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT league_id, category, COUNT(*) as cnt,\n  MIN(FROM_UNIXTIME(kickoff_utc_ms/1000)) as earliest,\n  MAX(FROM_UNIXTIME(kickoff_utc_ms/1000)) as latest\nFROM matches\nWHERE category = 'uefa'\nGROUP BY league_id, category\nORDER BY league_id;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute \nSELECT league_id, category, COUNT(*) as cnt,\n  MIN(FROM_UNIXTIME(kickoff_utc_ms/1000)) as earliest,\n  MAX(FROM_UNIXTIME(kickoff_utc_ms/1000)) as latest\nFROM matches\nWHERE category = 'uefa'\nGROUP BY league_id, category\nORDER BY league_id;\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'league_id' in 'group statement'"
+  ]
+}

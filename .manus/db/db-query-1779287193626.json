@@ -1,0 +1,58 @@
+{
+  "query": "\nSELECT leagueId, homeTeam, awayTeam, \n  FROM_UNIXTIME(kickoffUtcMs/1000) as kickoff_utc,\n  round, status\nFROM matches\nWHERE leagueId IN ('4481', '5071', '4480')\n  AND kickoffUtcMs > UNIX_TIMESTAMP('2026-05-01') * 1000\nORDER BY kickoffUtcMs ASC\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute \nSELECT leagueId, homeTeam, awayTeam, \n  FROM_UNIXTIME(kickoffUtcMs/1000) as kickoff_utc,\n  round, status\nFROM matches\nWHERE leagueId IN ('4481', '5071', '4480')\n  AND kickoffUtcMs > UNIX_TIMESTAMP('2026-05-01') * 1000\nORDER BY kickoffUtcMs ASC\nLIMIT 20;\n",
+  "rows": [
+    {
+      "leagueId": "4480",
+      "homeTeam": "Arsenal",
+      "awayTeam": "Atlético Madrid",
+      "kickoff_utc": "2026-05-05 19:00:00.0000",
+      "round": "150",
+      "status": "scheduled"
+    },
+    {
+      "leagueId": "4480",
+      "homeTeam": "Bayern Munich",
+      "awayTeam": "Paris SG",
+      "kickoff_utc": "2026-05-06 19:00:00.0000",
+      "round": "150",
+      "status": "scheduled"
+    },
+    {
+      "leagueId": "4481",
+      "homeTeam": "Freiburg",
+      "awayTeam": "Braga",
+      "kickoff_utc": "2026-05-07 19:00:00.0000",
+      "round": "150",
+      "status": "scheduled"
+    },
+    {
+      "leagueId": "5071",
+      "homeTeam": "Crystal Palace",
+      "awayTeam": "Shakhtar Donetsk",
+      "kickoff_utc": "2026-05-07 19:00:00.0000",
+      "round": "150",
+      "status": "scheduled"
+    },
+    {
+      "leagueId": "4481",
+      "homeTeam": "Aston Villa",
+      "awayTeam": "Nottingham Forest",
+      "kickoff_utc": "2026-05-07 19:00:00.0000",
+      "round": "150",
+      "status": "scheduled"
+    },
+    {
+      "leagueId": "5071",
+      "homeTeam": "Strasbourg",
+      "awayTeam": "Rayo Vallecano",
+      "kickoff_utc": "2026-05-07 19:00:00.0000",
+      "round": "150",
+      "status": "scheduled"
+    }
+  ],
+  "messages": [],
+  "stdout": "leagueId\thomeTeam\tawayTeam\tkickoff_utc\tround\tstatus\n4480\tArsenal\tAtlético Madrid\t2026-05-05 19:00:00.0000\t150\tscheduled\n4480\tBayern Munich\tParis SG\t2026-05-06 19:00:00.0000\t150\tscheduled\n4481\tFreiburg\tBraga\t2026-05-07 19:00:00.0000\t150\tscheduled\n5071\tCrystal Palace\tShakhtar Donetsk\t2026-05-07 19:00:00.0000\t150\tscheduled\n4481\tAston Villa\tNottingham Forest\t2026-05-07 19:00:00.0000\t150\tscheduled\n5071\tStrasbourg\tRayo Vallecano\t2026-05-07 19:00:00.0000\t150\tscheduled\n",
+  "stderr": "",
+  "execution_time_ms": 1765
+}

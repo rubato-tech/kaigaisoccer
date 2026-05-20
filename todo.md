@@ -272,3 +272,20 @@
 - [x] リーグフィルタをURLクエリパラメータ（?league=4331）で制御
 - [x] ?tab=xxx&league=xxxx の組み合わせでブックマーク・シェア可能にする
 - [x] LocalStorageにリーグフィルタの最終選択値も保存
+
+## 欧州日程タブの全カテゴリ統合（2026-05-20）
+
+- [x] 欧州日程タブ（euro_upcoming）にCL・EL・カンファレンスリーグ（UEFA）と各国カップ戦（cup）を統合
+- [x] 欧州結果タブ（euro_past）も同様に全カテゴリ一括表示に変更
+- [x] カップ戦タブ（cup_upcoming）を廃止（欧州日程タブに統合済みのため不要）
+- [x] db.tsのMatchListParamsを複数カテゴリ（配列）対応に拡張
+- [x] routers.tsのcategoryEnumを配列対応に更新
+- [x] Home.tsxのVIEWS定義を複数カテゴリ配列に変更・includeUefa廃止
+- [x] OGP/メタタグのtitles/ogDescriptionsからcup_upcomingエントリを削除
+- [x] テスト25件全合格
+
+## UEFA決勝データ未取得・sync-log更新バグ修正（2026-05-20）
+
+- [x] syncMatches.ts: isSpecialRound閾値を>=100から>=160に変更（R125=QF/R150=SFを「シーズン終了」と誤判定しないよう修正）
+- [x] sync-log-finish: isNull条件ではなく最新レコードのIDを直接指定して必ずfinishedAtを更新するよう修正
+- [x] テスト25件全合格

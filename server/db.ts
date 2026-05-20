@@ -92,8 +92,11 @@ export async function getUserByOpenId(openId: string) {
 
 // ---------- 試合データクエリ ----------
 
+export type MatchCategory = "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player";
+
 export interface MatchListParams {
-  category: "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player";
+  /** 単一カテゴリまたは複数カテゴリ（OR条件） */
+  category: MatchCategory | MatchCategory[];
   /** scope: upcoming = 直近, past = 終了済み */
   scope: "upcoming" | "past";
   /** UTC ms。指定なしならサーバー現在時刻 */
@@ -111,12 +114,25 @@ export async function listMatches(params: MatchListParams): Promise<Match[]> {
   const PAST_WINDOW_MS = 21 * 24 * 60 * 60 * 1000;
   const limit = params.limit ?? 1000;
 
-  // category 条件
+  // category 条件（単一 or 複数カテゴリ対応）
+  const categories = Array.isArray(params.category) ? params.category : [params.category];
   let categoryCondition;
-  if (params.category === "japanese_player") {
-    categoryCondition = like(matches.tags, "%japanese_player%");
+  if (categories.length === 1) {
+    const cat = categories[0];
+    if (cat === "japanese_player") {
+      categoryCondition = like(matches.tags, "%japanese_player%");
+    } else {
+      categoryCondition = eq(matches.category, cat);
+    }
   } else {
-    categoryCondition = eq(matches.category, params.category);
+    // 複数カテゴリ: japanese_player は tags で判定、それ以外は category カラムで OR
+    const hasJp = categories.includes("japanese_player");
+    const otherCats = categories.filter((c) => c !== "japanese_player");
+    const conditions = [
+      ...(otherCats.length > 0 ? otherCats.map((c) => eq(matches.category, c)) : []),
+      ...(hasJp ? [like(matches.tags, "%japanese_player%")] : []),
+    ];
+    categoryCondition = conditions.length === 1 ? conditions[0] : or(...conditions);
   }
 
   // 時刻範囲

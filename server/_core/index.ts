@@ -102,7 +102,7 @@ async function startServer() {
     try {
       const { getDb } = await import("../db");
       const { syncLog, matches: matchesTable } = await import("../../drizzle/schema");
-      const { isNull, sql } = await import("drizzle-orm");
+      const { desc, sql } = await import("drizzle-orm");
       const db = await getDb();
       if (!db) {
         res.status(500).json({ ok: false, error: "DB unavailable" });
@@ -111,19 +111,23 @@ async function startServer() {
       // matches テーブルの件数を取得
       const countRows = await db.select({ cnt: sql<number>`COUNT(*)` }).from(matchesTable);
       const totalCount = Number(countRows[0]?.cnt ?? 0);
-      // running 状態の sync_log を完了に更新
-      const updated = await db.update(syncLog)
-        .set({
-          status: "success",
-          fetchedCount: totalCount,
-          upsertedCount: totalCount,
-          finishedAt: new Date(),
-        })
-        .where(isNull(syncLog.finishedAt));
-      // running レコードがなければ新規挿入
-      const existing = await db.select().from(syncLog).orderBy(syncLog.id).limit(1);
-      if (existing.length === 0) {
-        const now = new Date();
+      const now = new Date();
+
+      // 最新の sync_log レコードを取得
+      const latest = await db.select().from(syncLog).orderBy(desc(syncLog.id)).limit(1);
+
+      if (latest.length > 0) {
+        // 最新レコードの finishedAt を現在時刻に必ず更新（NULL・非-NULL問わず）
+        await db.update(syncLog)
+          .set({
+            status: "success",
+            fetchedCount: totalCount,
+            upsertedCount: totalCount,
+            finishedAt: now,
+          })
+          .where(sql`${syncLog.id} = ${latest[0].id}`);
+      } else {
+        // レコードがなければ新規挿入
         await db.insert(syncLog).values({
           source: "thesportsdb",
           status: "success",
@@ -133,7 +137,7 @@ async function startServer() {
           finishedAt: now,
         });
       }
-      res.json({ ok: true, totalCount });
+      res.json({ ok: true, totalCount, finishedAt: now.toISOString() });
     } catch (err) {
       console.error("[sync-log-finish] failed:", err);
       res.status(500).json({ ok: false, error: (err as Error).message });

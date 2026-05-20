@@ -241,15 +241,17 @@ export async function syncOneLeague(
         ? parseInt(nextEvents[0].intRound, 10)
         : null;
 
-    // R200 以上はカップ戦の特別ラウンド（決勝等）
-    const isSpecialRound = (r: number | null) => r !== null && r >= 100;
+    // 決勝ラウンド（R160以上）が終了済みの場合のみシーズン終了とみなす
+    // R125=QF, R150=SF は次のラウンドがあるため通常取得を継続する
+    // ※ TheSportsDB の UEFA ラウンド定義: 1-8=グループ, 125=QF, 150=SF, 160=F
+    const isFinalRound = (r: number | null) => r !== null && r >= 160;
     // next が R0（無効）の場合は「next なし」と同じ扱い
     const hasValidNext = nextEvents.length > 0 && nextRound !== null && nextRound > 0;
 
-    if (!hasValidNext && isSpecialRound(pastRound)) {
-      // シーズン終了済み（決勝のみ）→ past の試合を保存して終了
+    if (!hasValidNext && isFinalRound(pastRound)) {
+      // 決勝終了済み → past の試合を保存して終了
       console.log(
-        `[sync] ${league.nameJp}: シーズン終了済み（R${pastRound}）、past のみ保存`,
+        `[sync] ${league.nameJp}: 決勝終了済み（R${pastRound}）、past のみ保存`,
       );
       const all = [...nextEvents, ...pastEvents];
       const fetched = all.length;
