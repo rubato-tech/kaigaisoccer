@@ -8,7 +8,7 @@ import { syncAllLeagues } from "./syncMatches";
 import { favoritesRouter } from "./routers/favorites";
 
 // 単一カテゴリまたは複数カテゴリ（配列）を受け付ける
-const singleCategoryEnum = z.enum(["euro_league", "cup", "uefa", "national_team", "japanese_player", "favorites"]);
+const singleCategoryEnum = z.enum(["euro_league", "cup", "uefa", "national_team", "japanese_player", "favorites", "world_cup"]);
 const categoryEnum = z.union([singleCategoryEnum, z.array(singleCategoryEnum)]);
 const scopeEnum = z.enum(["upcoming", "past"]);
 
@@ -36,7 +36,7 @@ export const appRouter = router({
         if (input.category === "favorites") {
           return { matches: [], lastSync: null, serverNowMs: Date.now() };
         }
-        type ValidCat = "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player";
+        type ValidCat = "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player" | "world_cup";
         const cat = input.category as ValidCat | ValidCat[];
         const rows = await listMatches({
           category: cat,

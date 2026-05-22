@@ -92,7 +92,7 @@ export async function getUserByOpenId(openId: string) {
 
 // ---------- 試合データクエリ ----------
 
-export type MatchCategory = "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player";
+export type MatchCategory = "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player" | "world_cup";
 
 export interface MatchListParams {
   /** 単一カテゴリまたは複数カテゴリ（OR条件） */

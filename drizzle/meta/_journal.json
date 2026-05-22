@@ -29,6 +29,13 @@
       "when": 1777555601055,
       "tag": "0003_chemical_jack_power",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1779438324250,
+      "tag": "0004_careless_iron_monger",
+      "breakpoints": true
     }
   ]
 }

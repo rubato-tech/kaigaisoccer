@@ -15,9 +15,9 @@ import { toJstParts } from "@shared/datetime";
 import { applyMatchFilter } from "@shared/matchFilter";
 import { leagueDisplayJp } from "@shared/teamNames";
 
-type ViewKey = "euro_upcoming" | "euro_past" | "japanese_upcoming" | "national_upcoming" | "favorites";
+type ViewKey = "euro_upcoming" | "euro_past" | "japanese_upcoming" | "national_upcoming" | "worldcup_upcoming" | "favorites";
 
-type MatchCategory = "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player";
+type MatchCategory = "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player" | "world_cup";
 
 interface ViewSpec {
   label: string;
@@ -74,6 +74,16 @@ const VIEWS: Record<ViewKey, ViewSpec> = {
     emptyText: "代表戦の予定は現在ありません。",
     description: "FIFAウィンドウや国際大会など、各国代表チームの試合スケジュール。",
   },
+  worldcup_upcoming: {
+    label: "🏆 W杯2026",
+    shortLabel: "W杯",
+    icon: Trophy,
+    category: "world_cup",
+    scope: "upcoming",
+    showScore: false,
+    emptyText: "ワールドカップ2026の試合データはまだ取得されていません。",
+    description: "FIFAワールドカップ2026（6月開幕）の試合日程を日本時間で表示。グループステージから決勝トーナメントまで一括確認できます。",
+  },
   favorites: {
     label: "お気に入り",
     shortLabel: "お気に入り",
@@ -109,6 +119,7 @@ function updateMetaTags(view: ViewKey, leagueIds: Set<string>) {
     euro_past: "欧州主要リーグ・CL・EL・ECL・各国カップ戦の直近21日間の試合結果をスコア付きで一覧表示。",
     japanese_upcoming: "久保建英・鎌田大地・遠藤航・三笘薫など日本人選手が在籍する欧州クラブの今後の試合日程を日本時間で。",
     national_upcoming: "FIFAワールドカップ予選・UEFA EURO・ネーションズリーグなど各国代表チームの試合スケジュール。",
+    worldcup_upcoming: "FIFAワールドカップ2026の試合日程を日本時間で表示。グループステージから決勝トーナメントまで一括確認。",
     favorites: "お気に入り登録したチームの今後30日間の試合を日本時間でまとめて表示。",
   };
 
@@ -117,6 +128,7 @@ function updateMetaTags(view: ViewKey, leagueIds: Set<string>) {
     euro_past: "海外サッカー結果 | 欧州リーグ・CL・EL・ECL・カップ戦結果を日本時間で",
     japanese_upcoming: "日本人選手出場試合 | 海外サッカー日程を日本時間で",
     national_upcoming: "代表戦日程 | W杯予選・EURO・ネーションズリーグ日程",
+    worldcup_upcoming: "ワールドカップ2026日程 | FIFA W杯2026試合日程を日本時間で",
     favorites: "お気に入りチームの試合日程 | 海外サッカー日程",
   };
 
@@ -239,7 +251,7 @@ export default function Home() {
   // 通常タブのデータ取得（favoritesタブ以外）—複数カテゴリは配列で渡す
   const queryCategory = spec.category === "favorites"
     ? ("euro_league" as const)
-    : (spec.category as "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player" | ("euro_league" | "cup" | "uefa" | "national_team" | "japanese_player")[]);
+    : (spec.category as "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player" | "world_cup" | ("euro_league" | "cup" | "uefa" | "national_team" | "japanese_player" | "world_cup")[]);
 
   const { data, error, isLoading, isFetching, refetch } = trpc.matches.list.useQuery(
     { category: queryCategory, scope: spec.scope },

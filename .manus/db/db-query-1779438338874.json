@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `matches` MODIFY COLUMN `category` enum('euro_league','cup','uefa','national_team','world_cup') NOT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute ALTER TABLE `matches` MODIFY COLUMN `category` enum('euro_league','cup','uefa','national_team','world_cup') NOT NULL;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1996
+}

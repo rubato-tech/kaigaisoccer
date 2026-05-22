@@ -2,7 +2,7 @@
  * 取り扱うリーグ・大会の定義。
  * idLeague は TheSportsDB の値を参照。
  */
-export type Category = "euro_league" | "cup" | "uefa" | "national_team";
+export type Category = "euro_league" | "cup" | "uefa" | "national_team" | "world_cup";
 export interface LeagueDef {
   id: string;
   /** 日本語表示名（短め） */
@@ -20,6 +20,11 @@ export interface LeagueDef {
    * リーグ戦は通常 1..最大ラウンド、UEFA はノックアウト独自ラウンド (125=QF, 150=SF, 160=F 等)
    */
   rounds: number[];
+  /**
+   * シーズン文字列を固定する場合に指定（例: WC2026 は "2026"）。
+   * 指定がない場合は fetchCurrentSeason() で自動取得。
+   */
+  fixedSeason?: string;
 }
 function range(start: number, end: number): number[] {
   const out: number[] = [];
@@ -61,6 +66,10 @@ export const LEAGUES: LeagueDef[] = [
   { id: "4480", nameJp: "チャンピオンズリーグ", nameEn: "UEFA Champions League",       category: "uefa", priority: 21, region: "Europe", rounds: UEFA_ROUNDS },
   { id: "4481", nameJp: "ヨーロッパリーグ",     nameEn: "UEFA Europa League",          category: "uefa", priority: 22, region: "Europe", rounds: UEFA_ROUNDS },
   { id: "5071", nameJp: "カンファレンスリーグ", nameEn: "UEFA Conference League",      category: "uefa", priority: 23, region: "Europe", rounds: UEFA_ROUNDS },
+  // ===== ワールドカップ =====
+  // WC2026: TheSportsDB では id=4429 でシーズン "2026" を使用（予選と同じIDだがシーズンで区別）
+  // グループステージ R1〜R3（各24試合）、ノックアウトは今後追加予定
+  { id: "4429", nameJp: "ワールドカップ2026",    nameEn: "FIFA World Cup 2026",         category: "world_cup",    priority: 0,  region: "World",  rounds: [...range(1, 3), 125, 150, 160, 200], fixedSeason: "2026" },
   // ===== 代表戦 =====
   { id: "4429", nameJp: "W杯予選",              nameEn: "FIFA World Cup Qualifying",   category: "national_team", priority: 31, region: "World",  rounds: range(1, 12) },
   { id: "4502", nameJp: "EURO",                 nameEn: "UEFA European Championships", category: "national_team", priority: 32, region: "Europe", rounds: range(1, 8) },

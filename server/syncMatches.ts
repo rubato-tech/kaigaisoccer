@@ -150,7 +150,7 @@ async function syncByRound(
   const { currentRound, fromNext } = await fetchCurrentRound(league.id);
   await sleep(400);
 
-  const season = (await fetchCurrentSeason(league.id)) ?? "2025-2026";
+  const season = league.fixedSeason ?? (await fetchCurrentSeason(league.id)) ?? "2025-2026";
   await sleep(300);
 
   let targetRounds: number[];
@@ -215,8 +215,8 @@ export async function syncOneLeague(
   if (!db) return { fetched: 0, upserted: 0, errors: ["DB unavailable"] };
   const errors: string[] = [];
 
-  if (league.category === "euro_league") {
-    // euro_league: ラウンドベース取得
+  if (league.category === "euro_league" || league.category === "world_cup") {
+    // euro_league / world_cup: ラウンドベース取得
     const { fetched, upserted } = await syncByRound(league, db, errors);
     return { fetched, upserted, errors };
   } else {

@@ -1,0 +1,80 @@
+{
+  "query": "\nSELECT \n  leagueNameJp,\n  leagueId,\n  MAX(CAST(round AS UNSIGNED)) as max_round,\n  MAX(FROM_UNIXTIME(kickoffUtcMs/1000 + 9*3600, '%Y-%m-%d %H:%i')) as latest_jst,\n  SUM(CASE WHEN CAST(round AS UNSIGNED) >= 160 THEN 1 ELSE 0 END) as final_count\nFROM matches\nWHERE leagueId IN ('4480','4481','5071','4482','4570','4483','4506','4485','4484','4510')\nGROUP BY leagueNameJp, leagueId\nORDER BY leagueId;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute \nSELECT \n  leagueNameJp,\n  leagueId,\n  MAX(CAST(round AS UNSIGNED)) as max_round,\n  MAX(FROM_UNIXTIME(kickoffUtcMs/1000 + 9*3600, '%Y-%m-%d %H:%i')) as latest_jst,\n  SUM(CASE WHEN CAST(round AS UNSIGNED) >= 160 THEN 1 ELSE 0 END) as final_count\nFROM matches\nWHERE leagueId IN ('4480','4481','5071','4482','4570','4483','4506','4485','4484','4510')\nGROUP BY leagueNameJp, leagueId\nORDER BY leagueId;\n",
+  "rows": [
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "leagueId": "4480",
+      "max_round": "150",
+      "latest_jst": "2026-05-07 04:00",
+      "final_count": "0"
+    },
+    {
+      "leagueNameJp": "ヨーロッパリーグ",
+      "leagueId": "4481",
+      "max_round": "150",
+      "latest_jst": "2026-05-08 04:00",
+      "final_count": "0"
+    },
+    {
+      "leagueNameJp": "FAカップ",
+      "leagueId": "4482",
+      "max_round": "200",
+      "latest_jst": "2026-05-16 23:00",
+      "final_count": "1"
+    },
+    {
+      "leagueNameJp": "コパ・デル・レイ",
+      "leagueId": "4483",
+      "max_round": "200",
+      "latest_jst": "2026-04-19 04:00",
+      "final_count": "1"
+    },
+    {
+      "leagueNameJp": "クープ・ド・フランス",
+      "leagueId": "4484",
+      "max_round": "150",
+      "latest_jst": "2026-05-23 04:00",
+      "final_count": "0"
+    },
+    {
+      "leagueNameJp": "DFBポカール",
+      "leagueId": "4485",
+      "max_round": "200",
+      "latest_jst": "2026-05-24 03:00",
+      "final_count": "1"
+    },
+    {
+      "leagueNameJp": "コッパ・イタリア",
+      "leagueId": "4506",
+      "max_round": "150",
+      "latest_jst": "2026-05-14 04:00",
+      "final_count": "0"
+    },
+    {
+      "leagueNameJp": "タサ・デ・ポルトガル",
+      "leagueId": "4510",
+      "max_round": "150",
+      "latest_jst": "2026-05-24 23:00",
+      "final_count": "0"
+    },
+    {
+      "leagueNameJp": "EFLカップ",
+      "leagueId": "4570",
+      "max_round": "200",
+      "latest_jst": "2026-03-23 01:30",
+      "final_count": "1"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "leagueId": "5071",
+      "max_round": "150",
+      "latest_jst": "2026-05-08 04:00",
+      "final_count": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "leagueNameJp\tleagueId\tmax_round\tlatest_jst\tfinal_count\nチャンピオンズリーグ\t4480\t150\t2026-05-07 04:00\t0\nヨーロッパリーグ\t4481\t150\t2026-05-08 04:00\t0\nFAカップ\t4482\t200\t2026-05-16 23:00\t1\nコパ・デル・レイ\t4483\t200\t2026-04-19 04:00\t1\nクープ・ド・フランス\t4484\t150\t2026-05-23 04:00\t0\nDFBポカール\t4485\t200\t2026-05-24 03:00\t1\nコッパ・イタリア\t4506\t150\t2026-05-14 04:00\t0\nタサ・デ・ポルトガル\t4510\t150\t2026-05-24 23:00\t0\nEFLカップ\t4570\t200\t2026-03-23 01:30\t1\nカンファレンスリーグ\t5071\t150\t2026-05-08 04:00\t0\n",
+  "stderr": "",
+  "execution_time_ms": 1763
+}
