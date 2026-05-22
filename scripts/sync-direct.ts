@@ -69,6 +69,20 @@ const allErrors: string[] = [];
 
 // sync_log に開始記録
 const db = await getDb();
+
+// マイグレーション: category カラムに world_cup を追加（冪等・エラー無視）
+if (db) {
+  try {
+    await db.execute(
+      "ALTER TABLE `matches` MODIFY COLUMN `category` enum('euro_league','cup','uefa','national_team','world_cup') NOT NULL" as unknown as import('drizzle-orm').SQL,
+    );
+    console.log("[sync-direct] マイグレーション完了: category に world_cup を追加");
+  } catch (err) {
+    // 既に適用済みの場合や権限エラーは無視して続行
+    console.warn("[sync-direct] マイグレーションスキップ（既適用または権限なし）:", (err as Error).message);
+  }
+}
+
 let logId: number | null = null;
 if (db) {
   try {
