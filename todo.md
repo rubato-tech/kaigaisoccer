@@ -299,3 +299,15 @@
 - [ ] GitHub SecretsにDATABASE_URLを追加（ユーザー作業）
 - [ ] GitHubに新しいワークフローをプッシュ（ユーザー作業）
 - [ ] GitHub Actionsで手動実行して動作確認（ユーザー作業）
+
+## ワールドカップ2026データ取得・表示機能追加（2026-05-22）
+
+- [x] TheSportsDB APIでWC2026のシーズン・ラウンド構造を調査（s=2026, R1〜R3=グループステージ各24試合）
+- [x] shared/leagues.tsにworld_cupカテゴリを追加・WC2026エントリ（id:4429, fixedSeason:"2026"）を追加
+- [x] drizzle/schema.tsのcategoryカラムにworld_cupを追加（マイグレーション適用済み）
+- [x] server/syncMatches.tsでworld_cupカテゴリをeuro_leagueと同様のラウンドベース取得に対応・fixedSeasonを使用
+- [x] server/db.tsのMatchCategory型にworld_cupを追加
+- [x] server/routers.tsのsingleCategoryEnumにworld_cupを追加
+- [x] client/src/pages/Home.tsxに「W杯2026」タブを追加（worldcup_upcoming）
+- [x] チェックポイント保存（ead8eed6）
+- [ ] GitHub Actionsで再実行してWC2026データを取得（ユーザー作業）

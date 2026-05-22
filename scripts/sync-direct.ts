@@ -79,7 +79,9 @@ if (db) {
       upsertedCount: 0,
       startedAt,
     });
-    logId = (logInsert as unknown as { insertId?: number }).insertId ?? null;
+    const rawInsertId = (logInsert as unknown as { insertId?: number | string }).insertId;
+    logId = rawInsertId != null ? Number(rawInsertId) : null;
+    console.log(`[sync-direct] sync_log 開始記録: logId=${logId}`);
   } catch (err) {
     console.warn("[sync-direct] sync_log 開始記録失敗:", err);
   }
@@ -112,6 +114,7 @@ for (const league of targetLeagues) {
 }
 
 // sync_log に完了記録
+console.log(`[sync-direct] sync_log 完了記録: logId=${logId}`);
 if (db && logId != null) {
   try {
     await db
