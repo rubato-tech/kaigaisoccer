@@ -289,3 +289,13 @@
 - [x] syncMatches.ts: isSpecialRound閾値を>=100から>=160に変更（R125=QF/R150=SFを「シーズン終了」と誤判定しないよう修正）
 - [x] sync-log-finish: isNull条件ではなく最新レコードのIDを直接指定して必ずfinishedAtを更新するよう修正
 - [x] テスト25件全合格
+
+## GitHub Actions 直接DB書き込み方式への移行（2026-05-22）
+
+- [x] Railwayデプロイログを分析（429レート制限が大量発生・並列処理が原因）
+- [x] scripts/sync-direct.ts を新規作成（サーバー経由なしで直接RailwayのMySQLに書き込む）
+- [x] リーグを1つずつ順番に処理（並列なし → 429レート制限を回避）
+- [x] .github/workflows/refresh-matches.yml を直接DB書き込み方式に全面更新（pnpm対応）
+- [ ] GitHub SecretsにDATABASE_URLを追加（ユーザー作業）
+- [ ] GitHubに新しいワークフローをプッシュ（ユーザー作業）
+- [ ] GitHub Actionsで手動実行して動作確認（ユーザー作業）
