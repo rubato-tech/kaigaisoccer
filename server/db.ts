@@ -109,13 +109,19 @@ export async function listMatches(params: MatchListParams): Promise<Match[]> {
   if (!db) return [];
 
   const now = params.nowUtcMs ?? Date.now();
-  // 直近未来は今後14日間, 過去は直近21日間を取得
-  const FUTURE_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+  // world_cup / national_team は期間制限なしで全件取得
+  const categories = Array.isArray(params.category) ? params.category : [params.category];
+  const isUnlimited = categories.every(
+    (c) => c === "world_cup" || c === "national_team",
+  );
+  // 直近未来は今後14日間（無制限カテゴリは365日）, 過去は直近21日間を取得
+  const FUTURE_WINDOW_MS = isUnlimited
+    ? 365 * 24 * 60 * 60 * 1000
+    : 14 * 24 * 60 * 60 * 1000;
   const PAST_WINDOW_MS = 21 * 24 * 60 * 60 * 1000;
   const limit = params.limit ?? 1000;
 
   // category 条件（単一 or 複数カテゴリ対応）
-  const categories = Array.isArray(params.category) ? params.category : [params.category];
   let categoryCondition;
   if (categories.length === 1) {
     const cat = categories[0];
