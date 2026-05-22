@@ -56,7 +56,7 @@ jobs:
             -H "Content-Type: application/json" \
             -H "Cookie: app_session_id=${{ secrets.SCHEDULED_TASK_COOKIE }}" \
             -d "{\"leagueId\": \"${{ matrix.league_id }}\"}" \
-            --max-time 90)
+            --max-time 120)
           echo "HTTP Status: $HTTP_STATUS"
           cat /tmp/response.json || true
           if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "202" ]; then
@@ -72,11 +72,10 @@ jobs:
     steps:
       - name: sync_log を完了状態に更新
         run: |
-          sleep 120
           HTTP_STATUS=$(curl -s -o /tmp/finish.json -w "%{http_code}" \
             -X POST "${{ secrets.SITE_URL }}/api/scheduled/sync-log-finish" \
             -H "Content-Type: application/json" \
             -H "Cookie: app_session_id=${{ secrets.SCHEDULED_TASK_COOKIE }}" \
-            --max-time 90)
+            --max-time 120)
           echo "HTTP Status: $HTTP_STATUS"
           cat /tmp/finish.json || true
