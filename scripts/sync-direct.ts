@@ -72,15 +72,16 @@ const db = await getDb();
 let logId: number | null = null;
 if (db) {
   try {
-    const logInsert = await db.insert(syncLog).values({
+    await db.insert(syncLog).values({
       source: "github-actions-direct",
       status: "running",
       fetchedCount: 0,
       upsertedCount: 0,
       startedAt,
     });
-    const rawInsertId = (logInsert as unknown as { insertId?: number | string }).insertId;
-    logId = rawInsertId != null ? Number(rawInsertId) : null;
+    // TiDB/Railway では insertId が返らない場合があるため SELECT MAX(id) で取得
+    const allRows = await db.select({ id: syncLog.id }).from(syncLog);
+    logId = allRows.length > 0 ? Math.max(...allRows.map((r) => r.id)) : null;
     console.log(`[sync-direct] sync_log 開始記録: logId=${logId}`);
   } catch (err) {
     console.warn("[sync-direct] sync_log 開始記録失敗:", err);

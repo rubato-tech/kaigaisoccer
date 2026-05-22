@@ -1,0 +1,25 @@
+{
+  "query": "SHOW CREATE TABLE sync_log;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SHOW CREATE TABLE sync_log;",
+  "rows": [
+    {
+      "Table": "sync_log",
+      "Create Table": "CREATE TABLE `sync_log` ("
+    }
+  ],
+  "messages": [
+    "  `id` int NOT NULL AUTO_INCREMENT,",
+    "  `source` varchar(64) NOT NULL,",
+    "  `status` varchar(32) NOT NULL,",
+    "  `fetchedCount` int NOT NULL DEFAULT '0',",
+    "  `upsertedCount` int NOT NULL DEFAULT '0',",
+    "  `message` text DEFAULT NULL,",
+    "  `startedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,",
+    "  `finishedAt` timestamp NULL DEFAULT NULL,",
+    "  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */",
+    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=510001"
+  ],
+  "stdout": "Table\tCreate Table\nsync_log\tCREATE TABLE `sync_log` (\n  `id` int NOT NULL AUTO_INCREMENT,\n  `source` varchar(64) NOT NULL,\n  `status` varchar(32) NOT NULL,\n  `fetchedCount` int NOT NULL DEFAULT '0',\n  `upsertedCount` int NOT NULL DEFAULT '0',\n  `message` text DEFAULT NULL,\n  `startedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `finishedAt` timestamp NULL DEFAULT NULL,\n  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=510001\n",
+  "stderr": "",
+  "execution_time_ms": 2404
+}
