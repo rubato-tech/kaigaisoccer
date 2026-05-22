@@ -1,0 +1,190 @@
+{
+  "query": "\nSELECT leagueNameJp, round, homeTeam, awayTeam, \n       FROM_UNIXTIME(kickoffUtcMs/1000, '%Y-%m-%d %H:%i UTC') as kickoff_utc,\n       FROM_UNIXTIME(kickoffUtcMs/1000 + 9*3600, '%Y-%m-%d %H:%i JST') as kickoff_jst,\n       status\nFROM matches\nWHERE leagueId IN (4480, 5071)\nORDER BY kickoffUtcMs DESC\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute \nSELECT leagueNameJp, round, homeTeam, awayTeam, \n       FROM_UNIXTIME(kickoffUtcMs/1000, '%Y-%m-%d %H:%i UTC') as kickoff_utc,\n       FROM_UNIXTIME(kickoffUtcMs/1000 + 9*3600, '%Y-%m-%d %H:%i JST') as kickoff_jst,\n       status\nFROM matches\nWHERE leagueId IN (4480, 5071)\nORDER BY kickoffUtcMs DESC\nLIMIT 20;\n",
+  "rows": [
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "150",
+      "homeTeam": "Strasbourg",
+      "awayTeam": "Rayo Vallecano",
+      "kickoff_utc": "2026-05-07 19:00 UTC",
+      "kickoff_jst": "2026-05-08 04:00 JST",
+      "status": "scheduled"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "150",
+      "homeTeam": "Crystal Palace",
+      "awayTeam": "Shakhtar Donetsk",
+      "kickoff_utc": "2026-05-07 19:00 UTC",
+      "kickoff_jst": "2026-05-08 04:00 JST",
+      "status": "scheduled"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "150",
+      "homeTeam": "Bayern Munich",
+      "awayTeam": "Paris SG",
+      "kickoff_utc": "2026-05-06 19:00 UTC",
+      "kickoff_jst": "2026-05-07 04:00 JST",
+      "status": "scheduled"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "150",
+      "homeTeam": "Arsenal",
+      "awayTeam": "Atlético Madrid",
+      "kickoff_utc": "2026-05-05 19:00 UTC",
+      "kickoff_jst": "2026-05-06 04:00 JST",
+      "status": "scheduled"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "150",
+      "homeTeam": "Rayo Vallecano",
+      "awayTeam": "Strasbourg",
+      "kickoff_utc": "2026-04-30 19:00 UTC",
+      "kickoff_jst": "2026-05-01 04:00 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "150",
+      "homeTeam": "Shakhtar Donetsk",
+      "awayTeam": "Crystal Palace",
+      "kickoff_utc": "2026-04-30 19:00 UTC",
+      "kickoff_jst": "2026-05-01 04:00 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "150",
+      "homeTeam": "Atlético Madrid",
+      "awayTeam": "Arsenal",
+      "kickoff_utc": "2026-04-29 19:00 UTC",
+      "kickoff_jst": "2026-04-30 04:00 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "150",
+      "homeTeam": "Paris SG",
+      "awayTeam": "Bayern Munich",
+      "kickoff_utc": "2026-04-28 19:00 UTC",
+      "kickoff_jst": "2026-04-29 04:00 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "125",
+      "homeTeam": "AEK Athens",
+      "awayTeam": "Rayo Vallecano",
+      "kickoff_utc": "2026-04-16 19:00 UTC",
+      "kickoff_jst": "2026-04-17 04:00 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "125",
+      "homeTeam": "Fiorentina",
+      "awayTeam": "Crystal Palace",
+      "kickoff_utc": "2026-04-16 19:00 UTC",
+      "kickoff_jst": "2026-04-17 04:00 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "125",
+      "homeTeam": "Strasbourg",
+      "awayTeam": "Mainz",
+      "kickoff_utc": "2026-04-16 19:00 UTC",
+      "kickoff_jst": "2026-04-17 04:00 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "125",
+      "homeTeam": "AZ Alkmaar",
+      "awayTeam": "Shakhtar Donetsk",
+      "kickoff_utc": "2026-04-16 16:45 UTC",
+      "kickoff_jst": "2026-04-17 01:45 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "125",
+      "homeTeam": "Bayern Munich",
+      "awayTeam": "Real Madrid",
+      "kickoff_utc": "2026-04-15 19:00 UTC",
+      "kickoff_jst": "2026-04-16 04:00 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "125",
+      "homeTeam": "Arsenal",
+      "awayTeam": "Sporting CP",
+      "kickoff_utc": "2026-04-15 19:00 UTC",
+      "kickoff_jst": "2026-04-16 04:00 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "125",
+      "homeTeam": "Atlético Madrid",
+      "awayTeam": "Barcelona",
+      "kickoff_utc": "2026-04-14 19:00 UTC",
+      "kickoff_jst": "2026-04-15 04:00 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "125",
+      "homeTeam": "Liverpool",
+      "awayTeam": "Paris SG",
+      "kickoff_utc": "2026-04-14 19:00 UTC",
+      "kickoff_jst": "2026-04-15 04:00 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "125",
+      "homeTeam": "Shakhtar Donetsk",
+      "awayTeam": "AZ Alkmaar",
+      "kickoff_utc": "2026-04-09 19:00 UTC",
+      "kickoff_jst": "2026-04-10 04:00 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "125",
+      "homeTeam": "Mainz",
+      "awayTeam": "Strasbourg",
+      "kickoff_utc": "2026-04-09 19:00 UTC",
+      "kickoff_jst": "2026-04-10 04:00 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "125",
+      "homeTeam": "Crystal Palace",
+      "awayTeam": "Fiorentina",
+      "kickoff_utc": "2026-04-09 19:00 UTC",
+      "kickoff_jst": "2026-04-10 04:00 JST",
+      "status": "finished"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "125",
+      "homeTeam": "Rayo Vallecano",
+      "awayTeam": "AEK Athens",
+      "kickoff_utc": "2026-04-09 16:45 UTC",
+      "kickoff_jst": "2026-04-10 01:45 JST",
+      "status": "finished"
+    }
+  ],
+  "messages": [],
+  "stdout": "leagueNameJp\tround\thomeTeam\tawayTeam\tkickoff_utc\tkickoff_jst\tstatus\nカンファレンスリーグ\t150\tStrasbourg\tRayo Vallecano\t2026-05-07 19:00 UTC\t2026-05-08 04:00 JST\tscheduled\nカンファレンスリーグ\t150\tCrystal Palace\tShakhtar Donetsk\t2026-05-07 19:00 UTC\t2026-05-08 04:00 JST\tscheduled\nチャンピオンズリーグ\t150\tBayern Munich\tParis SG\t2026-05-06 19:00 UTC\t2026-05-07 04:00 JST\tscheduled\nチャンピオンズリーグ\t150\tArsenal\tAtlético Madrid\t2026-05-05 19:00 UTC\t2026-05-06 04:00 JST\tscheduled\nカンファレンスリーグ\t150\tRayo Vallecano\tStrasbourg\t2026-04-30 19:00 UTC\t2026-05-01 04:00 JST\tfinished\nカンファレンスリーグ\t150\tShakhtar Donetsk\tCrystal Palace\t2026-04-30 19:00 UTC\t2026-05-01 04:00 JST\tfinished\nチャンピオンズリーグ\t150\tAtlético Madrid\tArsenal\t2026-04-29 19:00 UTC\t2026-04-30 04:00 JST\tfinished\nチャンピオンズリーグ\t150\tParis SG\tBayern Munich\t2026-04-28 19:00 UTC\t2026-04-29 04:00 JST\tfinished\nカンファレンスリーグ\t125\tAEK Athens\tRayo Vallecano\t2026-04-16 19:00 UTC\t2026-04-17 04:00 JST\tfinished\nカンファレンスリーグ\t125\tFiorentina\tCrystal Palace\t2026-04-16 19:00 UTC\t2026-04-17 04:00 JST\tfinished\nカンファレンスリーグ\t125\tStrasbourg\tMainz\t2026-04-16 19:00 UTC\t2026-04-17 04:00 JST\tfinished\nカンファレンスリーグ\t125\tAZ Alkmaar\tShakhtar Donetsk\t2026-04-16 16:45 UTC\t2026-04-17 01:45 JST\tfinished\nチャンピオンズリーグ\t125\tBayern Munich\tReal Madrid\t2026-04-15 19:00 UTC\t2026-04-16 04:00 JST\tfinished\nチャンピオンズリーグ\t125\tArsenal\tSporting CP\t2026-04-15 19:00 UTC\t2026-04-16 04:00 JST\tfinished\nチャンピオンズリーグ\t125\tAtlético Madrid\tBarcelona\t2026-04-14 19:00 UTC\t2026-04-15 04:00 JST\tfinished\nチャンピオンズリーグ\t125\tLiverpool\tParis SG\t2026-04-14 19:00 UTC\t2026-04-15 04:00 JST\tfinished\nカンファレンスリーグ\t125\tShakhtar Donetsk\tAZ Alkmaar\t2026-04-09 19:00 UTC\t2026-04-10 04:00 JST\tfinished\nカンファレンスリーグ\t125\tMainz\tStrasbourg\t2026-04-09 19:00 UTC\t2026-04-10 04:00 JST\tfinished\nカンファレンスリーグ\t125\tCrystal Palace\tFiorentina\t2026-04-09 19:00 UTC\t2026-04-10 04:00 JST\tfinished\nカンファレンスリーグ\t125\tRayo Vallecano\tAEK Athens\t2026-04-09 16:45 UTC\t2026-04-10 01:45 JST\tfinished\n",
+  "stderr": "",
+  "execution_time_ms": 1773
+}

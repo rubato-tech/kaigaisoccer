@@ -241,10 +241,10 @@ export async function syncOneLeague(
         ? parseInt(nextEvents[0].intRound, 10)
         : null;
 
-    // 決勝ラウンド（R160以上）が終了済みの場合のみシーズン終了とみなす
-    // R125=QF, R150=SF は次のラウンドがあるため通常取得を継続する
-    // ※ TheSportsDB の UEFA ラウンド定義: 1-8=グループ, 125=QF, 150=SF, 160=F
-    const isFinalRound = (r: number | null) => r !== null && r >= 160;
+    // 決勝ラウンド（R200以上）が終了済みの場合のみシーズン終了とみなす
+    // R125=QF, R150=SF, R160=F は次のラウンドがあるため通常取得を継続する
+    // ※ TheSportsDB の UEFA ラウンド定義: 1-8=グループ, 125=QF, 150=SF, 160=F, 200=決勝
+    const isFinalRound = (r: number | null) => r !== null && r >= 200;
     // next が R0（無効）の場合は「next なし」と同じ扱い
     const hasValidNext = nextEvents.length > 0 && nextRound !== null && nextRound > 0;
 

@@ -1,0 +1,9 @@
+{
+  "query": "\nSELECT leagueNameJp, round, homeTeam, awayTeam, \n       FROM_UNIXTIME(kickoffUtcMs/1000, '%Y-%m-%d %H:%i UTC') as kickoff_utc,\n       FROM_UNIXTIME(kickoffUtcMs/1000 + 9*3600, '%Y-%m-%d %H:%i JST') as kickoff_jst,\n       status\nFROM matches\nWHERE leagueId IN (4480, 5071)\n  AND round IN ('200', 'R200', 'Final', 'final', '160', '175')\nORDER BY kickoffUtcMs DESC\nLIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute \nSELECT leagueNameJp, round, homeTeam, awayTeam, \n       FROM_UNIXTIME(kickoffUtcMs/1000, '%Y-%m-%d %H:%i UTC') as kickoff_utc,\n       FROM_UNIXTIME(kickoffUtcMs/1000 + 9*3600, '%Y-%m-%d %H:%i JST') as kickoff_jst,\n       status\nFROM matches\nWHERE leagueId IN (4480, 5071)\n  AND round IN ('200', 'R200', 'Final', 'final', '160', '175')\nORDER BY kickoffUtcMs DESC\nLIMIT 10;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1940
+}

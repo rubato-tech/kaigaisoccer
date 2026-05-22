@@ -1,0 +1,122 @@
+{
+  "query": "\nSELECT leagueNameJp, round, COUNT(*) as cnt,\n       MIN(FROM_UNIXTIME(kickoffUtcMs/1000 + 9*3600, '%Y-%m-%d')) as earliest_jst,\n       MAX(FROM_UNIXTIME(kickoffUtcMs/1000 + 9*3600, '%Y-%m-%d')) as latest_jst\nFROM matches\nWHERE leagueId IN (4480, 5071)\nGROUP BY leagueNameJp, round\nORDER BY leagueNameJp, CAST(round AS UNSIGNED);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute \nSELECT leagueNameJp, round, COUNT(*) as cnt,\n       MIN(FROM_UNIXTIME(kickoffUtcMs/1000 + 9*3600, '%Y-%m-%d')) as earliest_jst,\n       MAX(FROM_UNIXTIME(kickoffUtcMs/1000 + 9*3600, '%Y-%m-%d')) as latest_jst\nFROM matches\nWHERE leagueId IN (4480, 5071)\nGROUP BY leagueNameJp, round\nORDER BY leagueNameJp, CAST(round AS UNSIGNED);\n",
+  "rows": [
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "3",
+      "cnt": "18",
+      "earliest_jst": "2025-11-07",
+      "latest_jst": "2025-11-07"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "4",
+      "cnt": "18",
+      "earliest_jst": "2025-11-28",
+      "latest_jst": "2025-11-28"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "5",
+      "cnt": "18",
+      "earliest_jst": "2025-12-12",
+      "latest_jst": "2025-12-12"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "6",
+      "cnt": "18",
+      "earliest_jst": "2025-12-19",
+      "latest_jst": "2025-12-19"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "125",
+      "cnt": "8",
+      "earliest_jst": "2026-04-10",
+      "latest_jst": "2026-04-17"
+    },
+    {
+      "leagueNameJp": "カンファレンスリーグ",
+      "round": "150",
+      "cnt": "4",
+      "earliest_jst": "2026-05-01",
+      "latest_jst": "2026-05-08"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "1",
+      "cnt": "18",
+      "earliest_jst": "2025-09-17",
+      "latest_jst": "2025-09-19"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "2",
+      "cnt": "18",
+      "earliest_jst": "2025-10-01",
+      "latest_jst": "2025-10-02"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "3",
+      "cnt": "18",
+      "earliest_jst": "2025-10-22",
+      "latest_jst": "2025-10-23"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "4",
+      "cnt": "18",
+      "earliest_jst": "2025-11-05",
+      "latest_jst": "2025-11-06"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "5",
+      "cnt": "18",
+      "earliest_jst": "2025-11-26",
+      "latest_jst": "2025-11-27"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "6",
+      "cnt": "18",
+      "earliest_jst": "2025-12-10",
+      "latest_jst": "2025-12-11"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "7",
+      "cnt": "18",
+      "earliest_jst": "2026-01-21",
+      "latest_jst": "2026-01-22"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "8",
+      "cnt": "18",
+      "earliest_jst": "2026-01-29",
+      "latest_jst": "2026-01-29"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "125",
+      "cnt": "8",
+      "earliest_jst": "2026-04-08",
+      "latest_jst": "2026-04-16"
+    },
+    {
+      "leagueNameJp": "チャンピオンズリーグ",
+      "round": "150",
+      "cnt": "4",
+      "earliest_jst": "2026-04-29",
+      "latest_jst": "2026-05-07"
+    }
+  ],
+  "messages": [],
+  "stdout": "leagueNameJp\tround\tcnt\tearliest_jst\tlatest_jst\nカンファレンスリーグ\t3\t18\t2025-11-07\t2025-11-07\nカンファレンスリーグ\t4\t18\t2025-11-28\t2025-11-28\nカンファレンスリーグ\t5\t18\t2025-12-12\t2025-12-12\nカンファレンスリーグ\t6\t18\t2025-12-19\t2025-12-19\nカンファレンスリーグ\t125\t8\t2026-04-10\t2026-04-17\nカンファレンスリーグ\t150\t4\t2026-05-01\t2026-05-08\nチャンピオンズリーグ\t1\t18\t2025-09-17\t2025-09-19\nチャンピオンズリーグ\t2\t18\t2025-10-01\t2025-10-02\nチャンピオンズリーグ\t3\t18\t2025-10-22\t2025-10-23\nチャンピオンズリーグ\t4\t18\t2025-11-05\t2025-11-06\nチャンピオンズリーグ\t5\t18\t2025-11-26\t2025-11-27\nチャンピオンズリーグ\t6\t18\t2025-12-10\t2025-12-11\nチャンピオンズリーグ\t7\t18\t2026-01-21\t2026-01-22\nチャンピオンズリーグ\t8\t18\t2026-01-29\t2026-01-29\nチャンピオンズリーグ\t125\t8\t2026-04-08\t2026-04-16\nチャンピオンズリーグ\t150\t4\t2026-04-29\t2026-05-07\n",
+  "stderr": "",
+  "execution_time_ms": 1907
+}

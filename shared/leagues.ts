@@ -29,10 +29,10 @@ function range(start: number, end: number): number[] {
 // UEFA 大会のノックアウト・グループステージのラウンド番号 (TheSportsDB 仕様)
 // 1〜8 = グループステージ／リーグフェーズ
 // 125 = ラウンド16 / QF, 150 = SF, 160 = F
-const UEFA_ROUNDS = [...range(1, 8), 125, 150, 160];
+const UEFA_ROUNDS = [...range(1, 8), 125, 150, 160, 200];
 // カップ戦のラウンド番号 (TheSportsDB 仕様)
 // 1〜8 = 予備予選〜準々決勝, 125=QF, 150=SF, 160=F
-const CUP_ROUNDS = [...range(1, 10), 125, 150, 160];
+const CUP_ROUNDS = [...range(1, 10), 125, 150, 160, 200];
 export const LEAGUES: LeagueDef[] = [
   // ===== 欧州5大リーグ =====
   { id: "4328", nameJp: "プレミアリーグ",       nameEn: "English Premier League",     category: "euro_league", priority: 1,  region: "England",     rounds: range(1, 38) },
