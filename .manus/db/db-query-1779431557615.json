@@ -1,0 +1,9 @@
+{
+  "query": "\nSELECT leagueId, leagueNameJp, homeTeam, awayTeam, \n  FROM_UNIXTIME(kickoffUtcMs/1000, '%Y-%m-%d %H:%i') as kickoff_utc,\n  kickoffUtcMs\nFROM matches\nWHERE category = 'uefa'\n  AND kickoffUtcMs >= UNIX_TIMESTAMP() * 1000\n  AND kickoffUtcMs <= (UNIX_TIMESTAMP() + 14*86400) * 1000\nORDER BY kickoffUtcMs ASC\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute \nSELECT leagueId, leagueNameJp, homeTeam, awayTeam, \n  FROM_UNIXTIME(kickoffUtcMs/1000, '%Y-%m-%d %H:%i') as kickoff_utc,\n  kickoffUtcMs\nFROM matches\nWHERE category = 'uefa'\n  AND kickoffUtcMs >= UNIX_TIMESTAMP() * 1000\n  AND kickoffUtcMs <= (UNIX_TIMESTAMP() + 14*86400) * 1000\nORDER BY kickoffUtcMs ASC\nLIMIT 20;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1833
+}

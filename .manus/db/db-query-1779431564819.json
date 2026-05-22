@@ -1,0 +1,90 @@
+{
+  "query": "\nSELECT leagueId, leagueNameJp, homeTeam, awayTeam, \n  FROM_UNIXTIME(kickoffUtcMs/1000, '%Y-%m-%d %H:%i') as kickoff_utc,\n  kickoffUtcMs\nFROM matches\nWHERE category = 'uefa'\nORDER BY kickoffUtcMs DESC\nLIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute \nSELECT leagueId, leagueNameJp, homeTeam, awayTeam, \n  FROM_UNIXTIME(kickoffUtcMs/1000, '%Y-%m-%d %H:%i') as kickoff_utc,\n  kickoffUtcMs\nFROM matches\nWHERE category = 'uefa'\nORDER BY kickoffUtcMs DESC\nLIMIT 10;\n",
+  "rows": [
+    {
+      "leagueId": "5071",
+      "leagueNameJp": "カンファレンスリーグ",
+      "homeTeam": "Strasbourg",
+      "awayTeam": "Rayo Vallecano",
+      "kickoff_utc": "2026-05-07 19:00",
+      "kickoffUtcMs": "1778180400000"
+    },
+    {
+      "leagueId": "5071",
+      "leagueNameJp": "カンファレンスリーグ",
+      "homeTeam": "Crystal Palace",
+      "awayTeam": "Shakhtar Donetsk",
+      "kickoff_utc": "2026-05-07 19:00",
+      "kickoffUtcMs": "1778180400000"
+    },
+    {
+      "leagueId": "4481",
+      "leagueNameJp": "ヨーロッパリーグ",
+      "homeTeam": "Freiburg",
+      "awayTeam": "Braga",
+      "kickoff_utc": "2026-05-07 19:00",
+      "kickoffUtcMs": "1778180400000"
+    },
+    {
+      "leagueId": "4481",
+      "leagueNameJp": "ヨーロッパリーグ",
+      "homeTeam": "Aston Villa",
+      "awayTeam": "Nottingham Forest",
+      "kickoff_utc": "2026-05-07 19:00",
+      "kickoffUtcMs": "1778180400000"
+    },
+    {
+      "leagueId": "4480",
+      "leagueNameJp": "チャンピオンズリーグ",
+      "homeTeam": "Bayern Munich",
+      "awayTeam": "Paris SG",
+      "kickoff_utc": "2026-05-06 19:00",
+      "kickoffUtcMs": "1778094000000"
+    },
+    {
+      "leagueId": "4480",
+      "leagueNameJp": "チャンピオンズリーグ",
+      "homeTeam": "Arsenal",
+      "awayTeam": "Atlético Madrid",
+      "kickoff_utc": "2026-05-05 19:00",
+      "kickoffUtcMs": "1778007600000"
+    },
+    {
+      "leagueId": "5071",
+      "leagueNameJp": "カンファレンスリーグ",
+      "homeTeam": "Rayo Vallecano",
+      "awayTeam": "Strasbourg",
+      "kickoff_utc": "2026-04-30 19:00",
+      "kickoffUtcMs": "1777575600000"
+    },
+    {
+      "leagueId": "5071",
+      "leagueNameJp": "カンファレンスリーグ",
+      "homeTeam": "Shakhtar Donetsk",
+      "awayTeam": "Crystal Palace",
+      "kickoff_utc": "2026-04-30 19:00",
+      "kickoffUtcMs": "1777575600000"
+    },
+    {
+      "leagueId": "4481",
+      "leagueNameJp": "ヨーロッパリーグ",
+      "homeTeam": "Braga",
+      "awayTeam": "Freiburg",
+      "kickoff_utc": "2026-04-30 19:00",
+      "kickoffUtcMs": "1777575600000"
+    },
+    {
+      "leagueId": "4481",
+      "leagueNameJp": "ヨーロッパリーグ",
+      "homeTeam": "Nottingham Forest",
+      "awayTeam": "Aston Villa",
+      "kickoff_utc": "2026-04-30 19:00",
+      "kickoffUtcMs": "1777575600000"
+    }
+  ],
+  "messages": [],
+  "stdout": "leagueId\tleagueNameJp\thomeTeam\tawayTeam\tkickoff_utc\tkickoffUtcMs\n5071\tカンファレンスリーグ\tStrasbourg\tRayo Vallecano\t2026-05-07 19:00\t1778180400000\n5071\tカンファレンスリーグ\tCrystal Palace\tShakhtar Donetsk\t2026-05-07 19:00\t1778180400000\n4481\tヨーロッパリーグ\tFreiburg\tBraga\t2026-05-07 19:00\t1778180400000\n4481\tヨーロッパリーグ\tAston Villa\tNottingham Forest\t2026-05-07 19:00\t1778180400000\n4480\tチャンピオンズリーグ\tBayern Munich\tParis SG\t2026-05-06 19:00\t1778094000000\n4480\tチャンピオンズリーグ\tArsenal\tAtlético Madrid\t2026-05-05 19:00\t1778007600000\n5071\tカンファレンスリーグ\tRayo Vallecano\tStrasbourg\t2026-04-30 19:00\t1777575600000\n5071\tカンファレンスリーグ\tShakhtar Donetsk\tCrystal Palace\t2026-04-30 19:00\t1777575600000\n4481\tヨーロッパリーグ\tBraga\tFreiburg\t2026-04-30 19:00\t1777575600000\n4481\tヨーロッパリーグ\tNottingham Forest\tAston Villa\t2026-04-30 19:00\t1777575600000\n",
+  "stderr": "",
+  "execution_time_ms": 1771
+}
