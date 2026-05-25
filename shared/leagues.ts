@@ -74,7 +74,7 @@ export const LEAGUES: LeagueDef[] = [
   { id: "4429", nameJp: "W杯予選",              nameEn: "FIFA World Cup Qualifying",   category: "national_team", priority: 31, region: "World",  rounds: range(1, 12) },
   { id: "4502", nameJp: "EURO",                 nameEn: "UEFA European Championships", category: "national_team", priority: 32, region: "Europe", rounds: range(1, 8) },
   { id: "4490", nameJp: "ネーションズリーグ",   nameEn: "UEFA Nations League",         category: "national_team", priority: 33, region: "Europe", rounds: [...range(1, 6), 125, 150, 160] },
-  { id: "4395", nameJp: "親善試合/その他",      nameEn: "International Friendly",      category: "national_team", priority: 34, region: "World",  rounds: range(1, 12) },
+  { id: "4562", nameJp: "親善試合/その他",      nameEn: "International Friendlies",    category: "national_team", priority: 34, region: "World",  rounds: range(1, 20), fixedSeason: "2026" },
 ];
 export const LEAGUE_BY_ID = new Map(LEAGUES.map((l) => [l.id, l] as const));
 /**
