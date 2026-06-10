@@ -17,9 +17,9 @@ import { leagueDisplayJp } from "@shared/teamNames";
 
 type ViewKey = "euro_upcoming" | "euro_past" | "japanese_upcoming" | "national_upcoming" | "worldcup_upcoming" | "favorites";
 
-// WC2026 開催期間（JST）: 2026-06-11 〜 2026-07-20
+// WC2026 開催期間（JST）: 2026-06-10 〜 2026-07-20
 // この期間中はW杯タブを最左に表示する
-const WC2026_START = new Date("2026-06-11T00:00:00+09:00").getTime();
+const WC2026_START = new Date("2026-06-10T00:00:00+09:00").getTime();
 const WC2026_END   = new Date("2026-07-20T23:59:59+09:00").getTime();
 function isWC2026Period(): boolean {
   const now = Date.now();
