@@ -17,6 +17,25 @@ import { leagueDisplayJp } from "@shared/teamNames";
 
 type ViewKey = "euro_upcoming" | "euro_past" | "japanese_upcoming" | "national_upcoming" | "worldcup_upcoming" | "favorites";
 
+// WC2026 開催期間（JST）: 2026-06-11 〜 2026-07-20
+// この期間中はW杯タブを最左に表示する
+const WC2026_START = new Date("2026-06-11T00:00:00+09:00").getTime();
+const WC2026_END   = new Date("2026-07-20T23:59:59+09:00").getTime();
+function isWC2026Period(): boolean {
+  const now = Date.now();
+  return now >= WC2026_START && now <= WC2026_END;
+}
+
+/** タブの表示順を返す。W杯開催期間中はworldcup_upcomingを先頭に移動 */
+function getViewOrder(): ViewKey[] {
+  const base: ViewKey[] = ["euro_upcoming", "euro_past", "japanese_upcoming", "national_upcoming", "worldcup_upcoming", "favorites"];
+  if (isWC2026Period()) {
+    // worldcup_upcoming を先頭に移動
+    return ["worldcup_upcoming", ...base.filter((k) => k !== "worldcup_upcoming")];
+  }
+  return base;
+}
+
 type MatchCategory = "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player" | "world_cup";
 
 interface ViewSpec {
@@ -197,8 +216,8 @@ function getInitialView(): ViewKey {
   } catch {
     // プライベートブラウジング等でLocalStorageが使えない場合は無視
   }
-  // 3. デフォルト
-  return "euro_upcoming";
+  // 3. デフォルト: W杯開催期間中はW杯タブを先頭に
+  return isWC2026Period() ? "worldcup_upcoming" : "euro_upcoming";
 }
 
 export default function Home() {
@@ -334,7 +353,7 @@ export default function Home() {
               className="-mb-px flex flex-1 overflow-x-auto"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
-              {(Object.keys(VIEWS) as ViewKey[]).map((key) => {
+              {getViewOrder().map((key) => {
                 const v = VIEWS[key];
                 const Icon = v.icon;
                 const isActive = view === key;

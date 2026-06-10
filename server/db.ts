@@ -1,4 +1,4 @@
-import { and, asc, between, desc, eq, like, lt, gte, lte, or } from "drizzle-orm";
+import { and, asc, between, desc, eq, like, lt, gte, lte, ne, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, matches, syncLog, users } from "../drizzle/schema";
 import type { Match } from "../drizzle/schema";
@@ -127,6 +127,15 @@ export async function listMatches(params: MatchListParams): Promise<Match[]> {
     const cat = categories[0];
     if (cat === "japanese_player") {
       categoryCondition = like(matches.tags, "%japanese_player%");
+    } else if (cat === "national_team") {
+      // national_team: WC2026（season="2026", leagueId="4429"）の試合は world_cup カテゴリで管理するため除外
+      categoryCondition = and(
+        eq(matches.category, "national_team"),
+        or(
+          ne(matches.leagueId, "4429"),
+          ne(matches.season, "2026"),
+        ),
+      );
     } else {
       categoryCondition = eq(matches.category, cat);
     }
@@ -135,7 +144,19 @@ export async function listMatches(params: MatchListParams): Promise<Match[]> {
     const hasJp = categories.includes("japanese_player");
     const otherCats = categories.filter((c) => c !== "japanese_player");
     const conditions = [
-      ...(otherCats.length > 0 ? otherCats.map((c) => eq(matches.category, c)) : []),
+      ...(otherCats.length > 0 ? otherCats.map((c) => {
+        if (c === "national_team") {
+          // national_team: WC2026（season="2026", leagueId="4429"）の試合は除外
+          return and(
+            eq(matches.category, "national_team"),
+            or(
+              ne(matches.leagueId, "4429"),
+              ne(matches.season, "2026"),
+            ),
+          );
+        }
+        return eq(matches.category, c);
+      }) : []),
       ...(hasJp ? [like(matches.tags, "%japanese_player%")] : []),
     ];
     categoryCondition = conditions.length === 1 ? conditions[0] : or(...conditions);

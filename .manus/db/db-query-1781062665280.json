@@ -1,0 +1,30 @@
+{
+  "query": "\nSELECT leagueId, leagueNameJp, COUNT(*) as cnt FROM matches WHERE category = 'national_team' GROUP BY leagueId, leagueNameJp ORDER BY cnt DESC LIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute \nSELECT leagueId, leagueNameJp, COUNT(*) as cnt FROM matches WHERE category = 'national_team' GROUP BY leagueId, leagueNameJp ORDER BY cnt DESC LIMIT 20;\n",
+  "rows": [
+    {
+      "leagueId": "4490",
+      "leagueNameJp": "ネーションズリーグ",
+      "cnt": "127"
+    },
+    {
+      "leagueId": "4429",
+      "leagueNameJp": "W杯予選",
+      "cnt": "73"
+    },
+    {
+      "leagueId": "4395",
+      "leagueNameJp": "親善試合/その他",
+      "cnt": "62"
+    },
+    {
+      "leagueId": "4502",
+      "leagueNameJp": "EURO",
+      "cnt": "37"
+    }
+  ],
+  "messages": [],
+  "stdout": "leagueId\tleagueNameJp\tcnt\n4490\tネーションズリーグ\t127\n4429\tW杯予選\t73\n4395\t親善試合/その他\t62\n4502\tEURO\t37\n",
+  "stderr": "",
+  "execution_time_ms": 1781
+}

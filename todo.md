@@ -311,3 +311,20 @@
 - [x] client/src/pages/Home.tsxに「W杯2026」タブを追加（worldcup_upcoming）
 - [x] チェックポイント保存（ead8eed6）
 - [ ] GitHub Actionsで再実行してWC2026データを取得（ユーザー作業）
+
+## 代表戦タブ・親善試合リーグID変更（2026-05-25）
+
+- [x] TheSportsDBで親善試合の現行リーグIDを調査（4395→4562、Japan vs Iceland=R16/2026シーズンで確認）
+- [x] shared/leagues.tsの親善試合エントリを4395→4562に変更（fixedSeason:"2026"、R1〜R20）
+- [ ] GitHub Actionsで再実行してJapan vs Iceland等の親善試合データを取得（ユーザー作業）
+
+## WC2026表示問題の修正（2026-06-10）
+
+- [x] 根本原因1: LEAGUE_BY_IDがMapのため同じid=4429が2エントリあると後者（W杯予選）が上書きされる問題を修正（world_cupを優先登録）
+- [x] 根本原因2: fetchCurrentRoundがfixedSeasonを無視してnext/pastを取得するためWC2026のラウンドが正しく推定できない問題を修正（fetchAllRounds=trueで全ラウンド取得）
+- [x] 根本原因3: 代表戦タブにWC2026試合が表示されている問題を修正（db.tsのnational_teamクエリでseason=2026かつleagueId=4429を除外）
+- [x] leagues.tsのWC2026エントリにfetchAllRounds=trueを追加、LEAGUE_BY_IDをworld_cup優先のループ式に変更
+- [x] syncByRoundでfetchAllRounds=trueの場合はfetchCurrentRoundをスキップして全ラウンドを取得するよう修正
+- [x] 代表戦タブからWC2026（leagueId=4429, season=2026）の試合を除外するdb.tsのクエリ修正
+- [x] W杯開催期間中（2026-06-11〜2026-07-20）はW杯タブを最左に表示するロジックをHome.tsxに実装
+- [x] テスト25件全合格・チェックポイント保存・GitHubプッシュ

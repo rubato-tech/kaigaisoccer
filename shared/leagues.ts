@@ -25,6 +25,11 @@ export interface LeagueDef {
    * 指定がない場合は fetchCurrentSeason() で自動取得。
    */
   fixedSeason?: string;
+  /**
+   * ラウンド推定をスキップして rounds 配列の全ラウンドを取得する場合に true。
+   * WC2026 のように fixedSeason が指定されていて next/past が正しく返らない場合に使用。
+   */
+  fetchAllRounds?: boolean;
 }
 function range(start: number, end: number): number[] {
   const out: number[] = [];
@@ -38,6 +43,11 @@ const UEFA_ROUNDS = [...range(1, 8), 125, 150, 160, 200];
 // カップ戦のラウンド番号 (TheSportsDB 仕様)
 // 1〜8 = 予備予選〜準々決勝, 125=QF, 150=SF, 160=F
 const CUP_ROUNDS = [...range(1, 10), 125, 150, 160, 200];
+// WC2026 のラウンド番号
+// R1〜R3 = グループステージ（各24試合）、R4以降 = ノックアウト
+// TheSportsDB での WC2026: id=4429, season="2026"
+const WC2026_ROUNDS = [...range(1, 8), 125, 150, 160, 200];
+
 export const LEAGUES: LeagueDef[] = [
   // ===== 欧州5大リーグ =====
   { id: "4328", nameJp: "プレミアリーグ",       nameEn: "English Premier League",     category: "euro_league", priority: 1,  region: "England",     rounds: range(1, 38) },
@@ -66,17 +76,41 @@ export const LEAGUES: LeagueDef[] = [
   { id: "4480", nameJp: "チャンピオンズリーグ", nameEn: "UEFA Champions League",       category: "uefa", priority: 21, region: "Europe", rounds: UEFA_ROUNDS },
   { id: "4481", nameJp: "ヨーロッパリーグ",     nameEn: "UEFA Europa League",          category: "uefa", priority: 22, region: "Europe", rounds: UEFA_ROUNDS },
   { id: "5071", nameJp: "カンファレンスリーグ", nameEn: "UEFA Conference League",      category: "uefa", priority: 23, region: "Europe", rounds: UEFA_ROUNDS },
-  // ===== ワールドカップ =====
-  // WC2026: TheSportsDB では id=4429 でシーズン "2026" を使用（予選と同じIDだがシーズンで区別）
-  // グループステージ R1〜R3（各24試合）、ノックアウトは今後追加予定
-  { id: "4429", nameJp: "ワールドカップ2026",    nameEn: "FIFA World Cup 2026",         category: "world_cup",    priority: 0,  region: "World",  rounds: [...range(1, 3), 125, 150, 160, 200], fixedSeason: "2026" },
+  // ===== ワールドカップ2026 =====
+  // TheSportsDB: id=4429, season="2026"（W杯予選と同じIDだがシーズンで区別）
+  // fetchAllRounds=true で next/past ラウンド推定をスキップして全ラウンドを取得
+  {
+    id: "4429",
+    nameJp: "ワールドカップ2026",
+    nameEn: "FIFA World Cup 2026",
+    category: "world_cup",
+    priority: 0,
+    region: "World",
+    rounds: WC2026_ROUNDS,
+    fixedSeason: "2026",
+    fetchAllRounds: true,
+  },
   // ===== 代表戦 =====
+  // W杯予選: id=4429 だが fixedSeason を指定しない（自動取得）→ 2025-2026シーズンの予選を取得
   { id: "4429", nameJp: "W杯予選",              nameEn: "FIFA World Cup Qualifying",   category: "national_team", priority: 31, region: "World",  rounds: range(1, 12) },
   { id: "4502", nameJp: "EURO",                 nameEn: "UEFA European Championships", category: "national_team", priority: 32, region: "Europe", rounds: range(1, 8) },
   { id: "4490", nameJp: "ネーションズリーグ",   nameEn: "UEFA Nations League",         category: "national_team", priority: 33, region: "Europe", rounds: [...range(1, 6), 125, 150, 160] },
   { id: "4562", nameJp: "親善試合/その他",      nameEn: "International Friendlies",    category: "national_team", priority: 34, region: "World",  rounds: range(1, 20), fixedSeason: "2026" },
 ];
-export const LEAGUE_BY_ID = new Map(LEAGUES.map((l) => [l.id, l] as const));
+
+/**
+ * LEAGUE_BY_ID: id → LeagueDef のマップ。
+ * 同じ id が複数ある場合（WC2026 と W杯予選は id=4429 を共有）、
+ * world_cup カテゴリを優先して登録する。
+ */
+export const LEAGUE_BY_ID = new Map<string, LeagueDef>();
+for (const league of LEAGUES) {
+  const existing = LEAGUE_BY_ID.get(league.id);
+  if (!existing || league.category === "world_cup") {
+    LEAGUE_BY_ID.set(league.id, league);
+  }
+}
+
 /**
  * 「日本人選手出場試合」を判定するためのチームID/チーム名のリスト。
  * TheSportsDB のチーム名（strHomeTeam/strAwayTeam）にマッチさせる。

@@ -1,0 +1,26 @@
+{
+  "query": "\nSELECT category, COUNT(*) as cnt FROM matches GROUP BY category ORDER BY category;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute \nSELECT category, COUNT(*) as cnt FROM matches GROUP BY category ORDER BY category;\n",
+  "rows": [
+    {
+      "category": "euro_league",
+      "cnt": "2348"
+    },
+    {
+      "category": "cup",
+      "cnt": "689"
+    },
+    {
+      "category": "uefa",
+      "cnt": "360"
+    },
+    {
+      "category": "national_team",
+      "cnt": "299"
+    }
+  ],
+  "messages": [],
+  "stdout": "category\tcnt\neuro_league\t2348\ncup\t689\nuefa\t360\nnational_team\t299\n",
+  "stderr": "",
+  "execution_time_ms": 2422
+}

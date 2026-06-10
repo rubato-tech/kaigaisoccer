@@ -146,42 +146,50 @@ async function syncByRound(
   const WINDOW_FORWARD = 3;
   const FALLBACK_COUNT = 10; // ラウンド推定失敗時に後半から試行するラウンド数
 
-  // 現在ラウンドを推定
-  const { currentRound, fromNext } = await fetchCurrentRound(league.id);
-  await sleep(400);
-
   const season = league.fixedSeason ?? (await fetchCurrentSeason(league.id)) ?? "2025-2026";
   await sleep(300);
 
   let targetRounds: number[];
 
-  if (currentRound === null) {
-    // ラウンド推定失敗 → rounds 配列の後半 FALLBACK_COUNT ラウンドを試行
-    console.warn(`[sync] ${league.nameJp}: ラウンド推定失敗、後半${FALLBACK_COUNT}ラウンドを試行`);
-    const allRounds = league.rounds;
-    targetRounds = allRounds.slice(-FALLBACK_COUNT);
+  if (league.fetchAllRounds) {
+    // fetchAllRounds=true の場合は rounds 配列の全ラウンドを取得（WC2026等）
+    targetRounds = league.rounds;
+    console.log(
+      `[sync] ${league.nameJp}: fetchAllRounds=true、全${targetRounds.length}ラウンドを取得（season=${season}）`,
+    );
   } else {
-    const maxRound = Math.max(...league.rounds);
-    const minRound = Math.min(...league.rounds);
+    // 現在ラウンドを推定
+    const { currentRound, fromNext } = await fetchCurrentRound(league.id);
+    await sleep(400);
 
-    if (fromNext) {
-      // next から取得: 現在ラウンドを中心に前後を取得
-      targetRounds = [];
-      for (let r = currentRound - WINDOW_BACK; r <= currentRound + WINDOW_FORWARD; r++) {
-        if (r >= minRound && r <= maxRound) targetRounds.push(r);
-      }
-      console.log(
-        `[sync] ${league.nameJp}: next=R${currentRound}、ラウンド${targetRounds[0]}〜${targetRounds[targetRounds.length - 1]}を取得`,
-      );
+    if (currentRound === null) {
+      // ラウンド推定失敗 → rounds 配列の後半 FALLBACK_COUNT ラウンドを試行
+      console.warn(`[sync] ${league.nameJp}: ラウンド推定失敗、後半${FALLBACK_COUNT}ラウンドを試行`);
+      const allRounds = league.rounds;
+      targetRounds = allRounds.slice(-FALLBACK_COUNT);
     } else {
-      // past のみ: 直近の過去ラウンドから前後を取得（少し前寄りに調整）
-      targetRounds = [];
-      for (let r = currentRound - WINDOW_BACK; r <= currentRound + WINDOW_FORWARD; r++) {
-        if (r >= minRound && r <= maxRound) targetRounds.push(r);
+      const maxRound = Math.max(...league.rounds);
+      const minRound = Math.min(...league.rounds);
+
+      if (fromNext) {
+        // next から取得: 現在ラウンドを中心に前後を取得
+        targetRounds = [];
+        for (let r = currentRound - WINDOW_BACK; r <= currentRound + WINDOW_FORWARD; r++) {
+          if (r >= minRound && r <= maxRound) targetRounds.push(r);
+        }
+        console.log(
+          `[sync] ${league.nameJp}: next=R${currentRound}、ラウンド${targetRounds[0]}〜${targetRounds[targetRounds.length - 1]}を取得`,
+        );
+      } else {
+        // past のみ: 直近の過去ラウンドから前後を取得（少し前寄りに調整）
+        targetRounds = [];
+        for (let r = currentRound - WINDOW_BACK; r <= currentRound + WINDOW_FORWARD; r++) {
+          if (r >= minRound && r <= maxRound) targetRounds.push(r);
+        }
+        console.log(
+          `[sync] ${league.nameJp}: past=R${currentRound}（next未取得）、ラウンド${targetRounds[0]}〜${targetRounds[targetRounds.length - 1]}を取得`,
+        );
       }
-      console.log(
-        `[sync] ${league.nameJp}: past=R${currentRound}（next未取得）、ラウンド${targetRounds[0]}〜${targetRounds[targetRounds.length - 1]}を取得`,
-      );
     }
   }
 
