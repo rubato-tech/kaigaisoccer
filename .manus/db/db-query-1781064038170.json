@@ -1,0 +1,9 @@
+{
+  "query": "SELECT category, season, leagueId, COUNT(*) as cnt FROM matches WHERE category = 'world_cup' GROUP BY category, season, leagueId;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT category, season, leagueId, COUNT(*) as cnt FROM matches WHERE category = 'world_cup' GROUP BY category, season, leagueId;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1807
+}

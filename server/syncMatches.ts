@@ -17,6 +17,7 @@
 import { JAPANESE_PLAYER_TEAMS, LEAGUES, type LeagueDef } from "@shared/leagues";
 import { getDb } from "./db";
 import { matches as matchesTable, syncLog } from "../drizzle/schema";
+import { sql } from "drizzle-orm";
 import {
   eventToUtcMs,
   fetchCurrentRound,
@@ -100,7 +101,11 @@ async function upsertEvents(
         .values(row)
         .onDuplicateKeyUpdate({
           set: {
-            category: row.category,
+            // world_cup カテゴリで保存済みのデータを national_team で上書きしないよう
+            // category は INSERT 時の値を優先（既存が world_cup なら維持）
+            // MySQL の IF(category='world_cup', category, ?) で条件付き更新
+            // → Drizzle の sql`` テンプレートで記述
+            category: sql`IF(${matchesTable.category} = 'world_cup', ${matchesTable.category}, ${row.category})`,
             leagueId: row.leagueId,
             leagueNameJp: row.leagueNameJp,
             leagueNameEn: row.leagueNameEn,
