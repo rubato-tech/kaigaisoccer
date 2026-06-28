@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE matches SET category = 'world_cup', leagueNameJp = 'ワールドカップ2026', leagueNameEn = 'FIFA World Cup 2026' WHERE leagueId = '4429' AND season = '2026';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute UPDATE matches SET category = 'world_cup', leagueNameJp = 'ワールドカップ2026', leagueNameEn = 'FIFA World Cup 2026' WHERE leagueId = '4429' AND season = '2026';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1822
+}

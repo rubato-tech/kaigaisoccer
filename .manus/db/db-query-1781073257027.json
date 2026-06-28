@@ -1,0 +1,50 @@
+{
+  "query": "SELECT category, season, kickoffUtcMs, homeTeam, awayTeam FROM matches WHERE category = 'world_cup' ORDER BY kickoffUtcMs ASC LIMIT 5;\nSELECT COUNT(*) as future_count FROM matches WHERE category = 'world_cup' AND kickoffUtcMs > UNIX_TIMESTAMP() * 1000;\nSELECT COUNT(*) as total_count FROM matches WHERE category = 'world_cup';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT category, season, kickoffUtcMs, homeTeam, awayTeam FROM matches WHERE category = 'world_cup' ORDER BY kickoffUtcMs ASC LIMIT 5;\nSELECT COUNT(*) as future_count FROM matches WHERE category = 'world_cup' AND kickoffUtcMs > UNIX_TIMESTAMP() * 1000;\nSELECT COUNT(*) as total_count FROM matches WHERE category = 'world_cup';",
+  "rows": [
+    {
+      "category": "world_cup",
+      "season": "2026",
+      "kickoffUtcMs": "1781204400000",
+      "homeTeam": "Mexico",
+      "awayTeam": "South Africa"
+    },
+    {
+      "category": "world_cup",
+      "season": "2026",
+      "kickoffUtcMs": "1781229600000",
+      "homeTeam": "South Korea",
+      "awayTeam": "Czech Republic"
+    },
+    {
+      "category": "world_cup",
+      "season": "2026",
+      "kickoffUtcMs": "1781290800000",
+      "homeTeam": "Canada",
+      "awayTeam": "Bosnia-Herzegovina"
+    },
+    {
+      "category": "world_cup",
+      "season": "2026",
+      "kickoffUtcMs": "1781312400000",
+      "homeTeam": "USA",
+      "awayTeam": "Paraguay"
+    },
+    {
+      "category": "world_cup",
+      "season": "2026",
+      "kickoffUtcMs": "1781377200000",
+      "homeTeam": "Qatar",
+      "awayTeam": "Switzerland"
+    }
+  ],
+  "messages": [
+    "future_count",
+    "72",
+    "total_count",
+    "72"
+  ],
+  "stdout": "category\tseason\tkickoffUtcMs\thomeTeam\tawayTeam\nworld_cup\t2026\t1781204400000\tMexico\tSouth Africa\nworld_cup\t2026\t1781229600000\tSouth Korea\tCzech Republic\nworld_cup\t2026\t1781290800000\tCanada\tBosnia-Herzegovina\nworld_cup\t2026\t1781312400000\tUSA\tParaguay\nworld_cup\t2026\t1781377200000\tQatar\tSwitzerland\nfuture_count\n72\ntotal_count\n72\n",
+  "stderr": "",
+  "execution_time_ms": 2878
+}

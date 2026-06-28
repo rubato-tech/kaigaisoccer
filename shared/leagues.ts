@@ -44,9 +44,11 @@ const UEFA_ROUNDS = [...range(1, 8), 125, 150, 160, 200];
 // 1〜8 = 予備予選〜準々決勝, 125=QF, 150=SF, 160=F
 const CUP_ROUNDS = [...range(1, 10), 125, 150, 160, 200];
 // WC2026 のラウンド番号
-// R1〜R3 = グループステージ（各24試合）、R4以降 = ノックアウト
+// R1〜R3 = グループステージ（各24試合）
+// R32 = ラウンド16（TheSportsDB の実際のラウンド番号）
+// R64 = QF, R128 = SF, R160 = 決勝（推定。TheSportsDB に登録され次第取得）
 // TheSportsDB での WC2026: id=4429, season="2026"
-const WC2026_ROUNDS = [...range(1, 8), 125, 150, 160, 200];
+const WC2026_ROUNDS = [...range(1, 3), 32, 64, 128, 160, 200];
 
 export const LEAGUES: LeagueDef[] = [
   // ===== 欧州5大リーグ =====

@@ -1,0 +1,90 @@
+{
+  "query": "SELECT category, season, leagueId, COUNT(*) as cnt FROM matches WHERE category = 'world_cup' GROUP BY category, season, leagueId;\nSELECT category, leagueId, season, kickoffUtcMs, homeTeam, awayTeam FROM matches WHERE leagueId = '4429' ORDER BY kickoffUtcMs ASC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT category, season, leagueId, COUNT(*) as cnt FROM matches WHERE category = 'world_cup' GROUP BY category, season, leagueId;\nSELECT category, leagueId, season, kickoffUtcMs, homeTeam, awayTeam FROM matches WHERE leagueId = '4429' ORDER BY kickoffUtcMs ASC LIMIT 10;",
+  "rows": [
+    {
+      "category": "national_team",
+      "leagueId": "4429",
+      "season": "2022",
+      "kickoffUtcMs": "1671375600000",
+      "homeTeam": "Argentina",
+      "awayTeam": "France"
+    },
+    {
+      "category": "national_team",
+      "leagueId": "4429",
+      "season": "2026",
+      "kickoffUtcMs": "1781204400000",
+      "homeTeam": "Mexico",
+      "awayTeam": "South Africa"
+    },
+    {
+      "category": "national_team",
+      "leagueId": "4429",
+      "season": "2026",
+      "kickoffUtcMs": "1781229600000",
+      "homeTeam": "South Korea",
+      "awayTeam": "Czech Republic"
+    },
+    {
+      "category": "national_team",
+      "leagueId": "4429",
+      "season": "2026",
+      "kickoffUtcMs": "1781290800000",
+      "homeTeam": "Canada",
+      "awayTeam": "Bosnia-Herzegovina"
+    },
+    {
+      "category": "national_team",
+      "leagueId": "4429",
+      "season": "2026",
+      "kickoffUtcMs": "1781312400000",
+      "homeTeam": "USA",
+      "awayTeam": "Paraguay"
+    },
+    {
+      "category": "national_team",
+      "leagueId": "4429",
+      "season": "2026",
+      "kickoffUtcMs": "1781377200000",
+      "homeTeam": "Qatar",
+      "awayTeam": "Switzerland"
+    },
+    {
+      "category": "national_team",
+      "leagueId": "4429",
+      "season": "2026",
+      "kickoffUtcMs": "1781388000000",
+      "homeTeam": "Brazil",
+      "awayTeam": "Morocco"
+    },
+    {
+      "category": "national_team",
+      "leagueId": "4429",
+      "season": "2026",
+      "kickoffUtcMs": "1781398800000",
+      "homeTeam": "Haiti",
+      "awayTeam": "Scotland"
+    },
+    {
+      "category": "national_team",
+      "leagueId": "4429",
+      "season": "2026",
+      "kickoffUtcMs": "1781409600000",
+      "homeTeam": "Australia",
+      "awayTeam": "Turkey"
+    },
+    {
+      "category": "national_team",
+      "leagueId": "4429",
+      "season": "2026",
+      "kickoffUtcMs": "1781456400000",
+      "homeTeam": "Germany",
+      "awayTeam": "Curaçao"
+    }
+  ],
+  "messages": [],
+  "stdout": "category\tleagueId\tseason\tkickoffUtcMs\thomeTeam\tawayTeam\nnational_team\t4429\t2022\t1671375600000\tArgentina\tFrance\nnational_team\t4429\t2026\t1781204400000\tMexico\tSouth Africa\nnational_team\t4429\t2026\t1781229600000\tSouth Korea\tCzech Republic\nnational_team\t4429\t2026\t1781290800000\tCanada\tBosnia-Herzegovina\nnational_team\t4429\t2026\t1781312400000\tUSA\tParaguay\nnational_team\t4429\t2026\t1781377200000\tQatar\tSwitzerland\nnational_team\t4429\t2026\t1781388000000\tBrazil\tMorocco\nnational_team\t4429\t2026\t1781398800000\tHaiti\tScotland\nnational_team\t4429\t2026\t1781409600000\tAustralia\tTurkey\nnational_team\t4429\t2026\t1781456400000\tGermany\tCuraçao\n",
+  "stderr": "",
+  "execution_time_ms": 3434
+}

@@ -1,0 +1,25 @@
+{
+  "query": "SELECT category, season, leagueId, COUNT(*) as cnt FROM matches WHERE leagueId = '4429' GROUP BY category, season, leagueId;\nSELECT COUNT(*) as world_cup_count FROM matches WHERE category = 'world_cup';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT category, season, leagueId, COUNT(*) as cnt FROM matches WHERE leagueId = '4429' GROUP BY category, season, leagueId;\nSELECT COUNT(*) as world_cup_count FROM matches WHERE category = 'world_cup';",
+  "rows": [
+    {
+      "category": "world_cup",
+      "season": "2026",
+      "leagueId": "4429",
+      "cnt": "72"
+    },
+    {
+      "category": "national_team",
+      "season": "2022",
+      "leagueId": "4429",
+      "cnt": "1"
+    }
+  ],
+  "messages": [
+    "world_cup_count",
+    "72"
+  ],
+  "stdout": "category\tseason\tleagueId\tcnt\nworld_cup\t2026\t4429\t72\nnational_team\t2022\t4429\t1\nworld_cup_count\n72\n",
+  "stderr": "",
+  "execution_time_ms": 2132
+}

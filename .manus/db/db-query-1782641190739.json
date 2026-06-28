@@ -1,0 +1,31 @@
+{
+  "query": "SELECT round, COUNT(*) as cnt, MIN(kickoffUtcMs) as earliest, MAX(kickoffUtcMs) as latest FROM matches WHERE category = 'world_cup' GROUP BY round ORDER BY CAST(round AS UNSIGNED) ASC;\nSELECT COUNT(*) as total FROM matches WHERE category = 'world_cup';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT round, COUNT(*) as cnt, MIN(kickoffUtcMs) as earliest, MAX(kickoffUtcMs) as latest FROM matches WHERE category = 'world_cup' GROUP BY round ORDER BY CAST(round AS UNSIGNED) ASC;\nSELECT COUNT(*) as total FROM matches WHERE category = 'world_cup';",
+  "rows": [
+    {
+      "round": "1",
+      "cnt": "24",
+      "earliest": "1781204400000",
+      "latest": "1781748000000"
+    },
+    {
+      "round": "2",
+      "cnt": "24",
+      "earliest": "1781798400000",
+      "latest": "1782266400000"
+    },
+    {
+      "round": "3",
+      "cnt": "24",
+      "earliest": "1782327600000",
+      "latest": "1782612000000"
+    }
+  ],
+  "messages": [
+    "total",
+    "72"
+  ],
+  "stdout": "round\tcnt\tearliest\tlatest\n1\t24\t1781204400000\t1781748000000\n2\t24\t1781798400000\t1782266400000\n3\t24\t1782327600000\t1782612000000\ntotal\n72\n",
+  "stderr": "",
+  "execution_time_ms": 2789
+}
