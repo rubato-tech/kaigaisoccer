@@ -93,13 +93,17 @@ async function fetchWc26Data(): Promise<{
   return { games, teams, stadiums };
 }
 
-/** "06/11/2026 13:00" (UTC) → UNIX ms */
+/** "06/11/2026 13:00" (EDT = UTC-4) → UNIX ms
+ * worldcup26.ir の local_date は EDT (米国東部夏時間, UTC-4) で記録されている
+ * 例: 17:00 EDT = 21:00 UTC = 翌06:00 JST
+ */
 function parseLocalDate(localDate: string): number {
-  // format: MM/DD/YYYY HH:mm
+  // format: MM/DD/YYYY HH:mm (EDT = UTC-4)
   const m = localDate.match(/^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/);
   if (!m) return 0;
   const [, mo, dd, yyyy, hh, mm] = m;
-  return Date.UTC(parseInt(yyyy), parseInt(mo) - 1, parseInt(dd), parseInt(hh), parseInt(mm));
+  // EDT は UTC-4 なので +4時間してUTCに変換
+  return Date.UTC(parseInt(yyyy), parseInt(mo) - 1, parseInt(dd), parseInt(hh) + 4, parseInt(mm));
 }
 
 /** WC2026 の試合タイプ → ラウンド文字列 */
