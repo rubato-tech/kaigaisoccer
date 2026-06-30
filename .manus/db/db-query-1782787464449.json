@@ -1,0 +1,64 @@
+{
+  "query": "SELECT round, COUNT(*) as cnt, MIN(FROM_UNIXTIME(kickoffUtcMs/1000)) as earliest, MAX(FROM_UNIXTIME(kickoffUtcMs/1000)) as latest FROM matches WHERE category = 'world_cup' GROUP BY round ORDER BY MIN(kickoffUtcMs) ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT round, COUNT(*) as cnt, MIN(FROM_UNIXTIME(kickoffUtcMs/1000)) as earliest, MAX(FROM_UNIXTIME(kickoffUtcMs/1000)) as latest FROM matches WHERE category = 'world_cup' GROUP BY round ORDER BY MIN(kickoffUtcMs) ASC;",
+  "rows": [
+    {
+      "round": "1",
+      "cnt": "24",
+      "earliest": "2026-06-11 13:00:00.0000",
+      "latest": "2026-06-17 20:00:00.0000"
+    },
+    {
+      "round": "2",
+      "cnt": "24",
+      "earliest": "2026-06-18 12:00:00.0000",
+      "latest": "2026-06-23 20:00:00.0000"
+    },
+    {
+      "round": "3",
+      "cnt": "24",
+      "earliest": "2026-06-24 12:00:00.0000",
+      "latest": "2026-06-27 21:00:00.0000"
+    },
+    {
+      "round": "R32",
+      "cnt": "16",
+      "earliest": "2026-06-28 12:00:00.0000",
+      "latest": "2026-07-03 20:30:00.0000"
+    },
+    {
+      "round": "R16",
+      "cnt": "8",
+      "earliest": "2026-07-04 12:00:00.0000",
+      "latest": "2026-07-07 13:00:00.0000"
+    },
+    {
+      "round": "QF",
+      "cnt": "4",
+      "earliest": "2026-07-09 16:00:00.0000",
+      "latest": "2026-07-11 20:00:00.0000"
+    },
+    {
+      "round": "SF",
+      "cnt": "2",
+      "earliest": "2026-07-14 14:00:00.0000",
+      "latest": "2026-07-15 15:00:00.0000"
+    },
+    {
+      "round": "3rd",
+      "cnt": "1",
+      "earliest": "2026-07-18 17:00:00.0000",
+      "latest": "2026-07-18 17:00:00.0000"
+    },
+    {
+      "round": "Final",
+      "cnt": "1",
+      "earliest": "2026-07-19 15:00:00.0000",
+      "latest": "2026-07-19 15:00:00.0000"
+    }
+  ],
+  "messages": [],
+  "stdout": "round\tcnt\tearliest\tlatest\n1\t24\t2026-06-11 13:00:00.0000\t2026-06-17 20:00:00.0000\n2\t24\t2026-06-18 12:00:00.0000\t2026-06-23 20:00:00.0000\n3\t24\t2026-06-24 12:00:00.0000\t2026-06-27 21:00:00.0000\nR32\t16\t2026-06-28 12:00:00.0000\t2026-07-03 20:30:00.0000\nR16\t8\t2026-07-04 12:00:00.0000\t2026-07-07 13:00:00.0000\nQF\t4\t2026-07-09 16:00:00.0000\t2026-07-11 20:00:00.0000\nSF\t2\t2026-07-14 14:00:00.0000\t2026-07-15 15:00:00.0000\n3rd\t1\t2026-07-18 17:00:00.0000\t2026-07-18 17:00:00.0000\nFinal\t1\t2026-07-19 15:00:00.0000\t2026-07-19 15:00:00.0000\n",
+  "stderr": "",
+  "execution_time_ms": 1872
+}
