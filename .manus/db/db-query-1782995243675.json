@@ -1,0 +1,64 @@
+{
+  "query": "SELECT homeTeam, awayTeam, kickoffUtcMs, FROM_UNIXTIME(kickoffUtcMs/1000 + 9*3600, '%m/%d %H:%i') AS jst FROM matches WHERE category = 'world_cup' AND (homeTeam LIKE '%Portugal%' OR homeTeam LIKE '%Switzerland%' OR homeTeam LIKE '%Spain%') ORDER BY kickoffUtcMs LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT homeTeam, awayTeam, kickoffUtcMs, FROM_UNIXTIME(kickoffUtcMs/1000 + 9*3600, '%m/%d %H:%i') AS jst FROM matches WHERE category = 'world_cup' AND (homeTeam LIKE '%Portugal%' OR homeTeam LIKE '%Switzerland%' OR homeTeam LIKE '%Spain%') ORDER BY kickoffUtcMs LIMIT 10",
+  "rows": [
+    {
+      "homeTeam": "Spain",
+      "awayTeam": "Cape Verde",
+      "kickoffUtcMs": "1781539200000",
+      "jst": "06/16 01:00"
+    },
+    {
+      "homeTeam": "Portugal",
+      "awayTeam": "Democratic Republic of the Congo",
+      "kickoffUtcMs": "1781715600000",
+      "jst": "06/18 02:00"
+    },
+    {
+      "homeTeam": "Switzerland",
+      "awayTeam": "Bosnia and Herzegovina",
+      "kickoffUtcMs": "1781809200000",
+      "jst": "06/19 04:00"
+    },
+    {
+      "homeTeam": "Spain",
+      "awayTeam": "Saudi Arabia",
+      "kickoffUtcMs": "1782057600000",
+      "jst": "06/22 01:00"
+    },
+    {
+      "homeTeam": "Portugal",
+      "awayTeam": "Uzbekistan",
+      "kickoffUtcMs": "1782234000000",
+      "jst": "06/24 02:00"
+    },
+    {
+      "homeTeam": "Switzerland",
+      "awayTeam": "Canada",
+      "kickoffUtcMs": "1782327600000",
+      "jst": "06/25 04:00"
+    },
+    {
+      "homeTeam": "Spain",
+      "awayTeam": "Austria",
+      "kickoffUtcMs": "1783018800000",
+      "jst": "07/03 04:00"
+    },
+    {
+      "homeTeam": "Portugal",
+      "awayTeam": "Croatia",
+      "kickoffUtcMs": "1783033200000",
+      "jst": "07/03 08:00"
+    },
+    {
+      "homeTeam": "Switzerland",
+      "awayTeam": "Algeria",
+      "kickoffUtcMs": "1783047600000",
+      "jst": "07/03 12:00"
+    }
+  ],
+  "messages": [],
+  "stdout": "homeTeam\tawayTeam\tkickoffUtcMs\tjst\nSpain\tCape Verde\t1781539200000\t06/16 01:00\nPortugal\tDemocratic Republic of the Congo\t1781715600000\t06/18 02:00\nSwitzerland\tBosnia and Herzegovina\t1781809200000\t06/19 04:00\nSpain\tSaudi Arabia\t1782057600000\t06/22 01:00\nPortugal\tUzbekistan\t1782234000000\t06/24 02:00\nSwitzerland\tCanada\t1782327600000\t06/25 04:00\nSpain\tAustria\t1783018800000\t07/03 04:00\nPortugal\tCroatia\t1783033200000\t07/03 08:00\nSwitzerland\tAlgeria\t1783047600000\t07/03 12:00\n",
+  "stderr": "",
+  "execution_time_ms": 1794
+}

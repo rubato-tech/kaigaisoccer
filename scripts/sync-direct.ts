@@ -93,17 +93,61 @@ async function fetchWc26Data(): Promise<{
   return { games, teams, stadiums };
 }
 
-/** "06/11/2026 13:00" (EDT = UTC-4) → UNIX ms
- * worldcup26.ir の local_date は EDT (米国東部夏時間, UTC-4) で記録されている
- * 例: 17:00 EDT = 21:00 UTC = 翌06:00 JST
+/**
+ * WC2026開催地のタイムゾーンオフセット（UTCからの差分）
+ * worldcup26.ir の local_date は開催地の現地時間で記録されている
+ *
+ * スタジアムID対応表（worldcup26.irのid）:
+ * 1: Estadio Azteca, Mexico City (CDT = UTC-5)
+ * 2: Estadio Akron, Guadalajara (CDT = UTC-5)
+ * 3: Estadio BBVA, Monterrey (CDT = UTC-5)
+ * 4: AT&T Stadium, Dallas (CDT = UTC-5)
+ * 5: NRG Stadium, Houston (CDT = UTC-5)
+ * 6: GEHA Field at Arrowhead Stadium, Kansas City (CDT = UTC-5)
+ * 7: Mercedes-Benz Stadium, Atlanta (EDT = UTC-4)
+ * 8: Hard Rock Stadium, Miami (EDT = UTC-4)
+ * 9: Gillette Stadium, Boston (EDT = UTC-4)
+ * 10: Lincoln Financial Field, Philadelphia (EDT = UTC-4)
+ * 11: MetLife Stadium, New York (EDT = UTC-4)
+ * 12: BMO Field, Toronto (EDT = UTC-4)
+ * 13: BC Place, Vancouver (PDT = UTC-7)
+ * 14: Lumen Field, Seattle (PDT = UTC-7)
+ * 15: Levi's Stadium, San Francisco (PDT = UTC-7)
+ * 16: SoFi Stadium, Los Angeles (PDT = UTC-7)
  */
-function parseLocalDate(localDate: string): number {
-  // format: MM/DD/YYYY HH:mm (EDT = UTC-4)
+const STADIUM_UTC_OFFSET: Record<string, number> = {
+  "1": -5, // Mexico City (CDT)
+  "2": -5, // Guadalajara (CDT)
+  "3": -5, // Monterrey (CDT)
+  "4": -5, // Dallas (CDT)
+  "5": -5, // Houston (CDT)
+  "6": -5, // Kansas City (CDT)
+  "7": -4, // Atlanta (EDT)
+  "8": -4, // Miami (EDT)
+  "9": -4, // Boston (EDT)
+  "10": -4, // Philadelphia (EDT)
+  "11": -4, // New York (EDT)
+  "12": -4, // Toronto (EDT)
+  "13": -7, // Vancouver (PDT)
+  "14": -7, // Seattle (PDT)
+  "15": -7, // San Francisco (PDT)
+  "16": -7, // Los Angeles (PDT)
+};
+
+/** "06/11/2026 13:00" (開催地現地時間) + stadiumId → UNIX ms (UTC)
+ * worldcup26.ir の local_date は各スタジアムの現地時間で記録されている
+ */
+function parseLocalDate(localDate: string, stadiumId?: string): number {
+  // format: MM/DD/YYYY HH:mm
   const m = localDate.match(/^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/);
   if (!m) return 0;
   const [, mo, dd, yyyy, hh, mm] = m;
-  // EDT は UTC-4 なので +4時間してUTCに変換
-  return Date.UTC(parseInt(yyyy), parseInt(mo) - 1, parseInt(dd), parseInt(hh) + 4, parseInt(mm));
+  // スタジアムのタイムゾーンオフセット（不明な場合はEDT=-4をデフォルト）
+  const offsetHours = stadiumId ? (STADIUM_UTC_OFFSET[stadiumId] ?? -4) : -4;
+  // 現地時間 - offset = UTC時間
+  // 例: 19:00 EDT(UTC-4) → UTC = 19:00 - (-4) = 23:00
+  const localMs = Date.UTC(parseInt(yyyy), parseInt(mo) - 1, parseInt(dd), parseInt(hh), parseInt(mm));
+  return localMs - offsetHours * 60 * 60 * 1000;
 }
 
 /** WC2026 の試合タイプ → ラウンド文字列 */
@@ -160,7 +204,7 @@ async function syncWc2026(db: Awaited<ReturnType<typeof getDb>>): Promise<{ fetc
       const homeTeamBadge = homeTeam?.flag ?? null;
       const awayTeamBadge = awayTeam?.flag ?? null;
 
-      const kickoffUtcMs = parseLocalDate(game.local_date);
+      const kickoffUtcMs = parseLocalDate(game.local_date, game.stadium_id);
       if (!kickoffUtcMs) {
         errors.push(`game ${game.id}: invalid date ${game.local_date}`);
         continue;
