@@ -15,26 +15,9 @@ import { toJstParts } from "@shared/datetime";
 import { applyMatchFilter } from "@shared/matchFilter";
 import { leagueDisplayJp } from "@shared/teamNames";
 
-type ViewKey = "euro_upcoming" | "euro_past" | "japanese_upcoming" | "national_upcoming" | "worldcup_upcoming" | "favorites";
+type ViewKey = "euro_upcoming" | "euro_past" | "japanese_upcoming" | "national_upcoming" | "favorites";
 
-// WC2026 開催期間（JST）: 2026-06-10 〜 2026-07-20
-// この期間中はW杯タブを最左に表示する
-const WC2026_START = new Date("2026-06-10T00:00:00+09:00").getTime();
-const WC2026_END   = new Date("2026-07-20T23:59:59+09:00").getTime();
-function isWC2026Period(): boolean {
-  const now = Date.now();
-  return now >= WC2026_START && now <= WC2026_END;
-}
-
-/** タブの表示順を返す。W杯開催期間中はworldcup_upcomingを先頭に移動 */
-function getViewOrder(): ViewKey[] {
-  const base: ViewKey[] = ["euro_upcoming", "euro_past", "japanese_upcoming", "national_upcoming", "worldcup_upcoming", "favorites"];
-  if (isWC2026Period()) {
-    // worldcup_upcoming を先頭に移動
-    return ["worldcup_upcoming", ...base.filter((k) => k !== "worldcup_upcoming")];
-  }
-  return base;
-}
+const VIEW_ORDER: ViewKey[] = ["euro_upcoming", "euro_past", "japanese_upcoming", "national_upcoming", "favorites"];
 
 type MatchCategory = "euro_league" | "cup" | "uefa" | "national_team" | "japanese_player" | "world_cup";
 
@@ -93,16 +76,6 @@ const VIEWS: Record<ViewKey, ViewSpec> = {
     emptyText: "代表戦の予定は現在ありません。",
     description: "FIFAウィンドウや国際大会など、各国代表チームの試合スケジュール。",
   },
-  worldcup_upcoming: {
-    label: "🏆 W杯2026",
-    shortLabel: "W杯",
-    icon: Trophy,
-    category: "world_cup",
-    scope: "upcoming",
-    showScore: false,
-    emptyText: "ワールドカップ2026の試合データはまだ取得されていません。",
-    description: "FIFAワールドカップ2026（6月開幕）の試合日程を日本時間で表示。グループステージから決勝トーナメントまで一括確認できます。",
-  },
   favorites: {
     label: "お気に入り",
     shortLabel: "お気に入り",
@@ -138,7 +111,6 @@ function updateMetaTags(view: ViewKey, leagueIds: Set<string>) {
     euro_past: "欧州主要リーグ・CL・EL・ECL・各国カップ戦の直近21日間の試合結果をスコア付きで一覧表示。",
     japanese_upcoming: "久保建英・鎌田大地・遠藤航・三笘薫など日本人選手が在籍する欧州クラブの今後の試合日程を日本時間で。",
     national_upcoming: "FIFAワールドカップ予選・UEFA EURO・ネーションズリーグなど各国代表チームの試合スケジュール。",
-    worldcup_upcoming: "FIFAワールドカップ2026の試合日程を日本時間で表示。グループステージから決勝トーナメントまで一括確認。",
     favorites: "お気に入り登録したチームの今後30日間の試合を日本時間でまとめて表示。",
   };
 
@@ -147,7 +119,6 @@ function updateMetaTags(view: ViewKey, leagueIds: Set<string>) {
     euro_past: "海外サッカー結果 | 欧州リーグ・CL・EL・ECL・カップ戦結果を日本時間で",
     japanese_upcoming: "日本人選手出場試合 | 海外サッカー日程を日本時間で",
     national_upcoming: "代表戦日程 | W杯予選・EURO・ネーションズリーグ日程",
-    worldcup_upcoming: "ワールドカップ2026日程 | FIFA W杯2026試合日程を日本時間で",
     favorites: "お気に入りチームの試合日程 | 海外サッカー日程",
   };
 
@@ -216,8 +187,8 @@ function getInitialView(): ViewKey {
   } catch {
     // プライベートブラウジング等でLocalStorageが使えない場合は無視
   }
-  // 3. デフォルト: W杯開催期間中はW杯タブを先頭に
-  return isWC2026Period() ? "worldcup_upcoming" : "euro_upcoming";
+  // 3. デフォルト
+  return "euro_upcoming";
 }
 
 export default function Home() {
@@ -353,7 +324,7 @@ export default function Home() {
               className="-mb-px flex flex-1 overflow-x-auto"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
-              {getViewOrder().map((key) => {
+              {VIEW_ORDER.map((key) => {
                 const v = VIEWS[key];
                 const Icon = v.icon;
                 const isActive = view === key;
