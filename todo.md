@@ -296,9 +296,9 @@
 - [x] scripts/sync-direct.ts を新規作成（サーバー経由なしで直接RailwayのMySQLに書き込む）
 - [x] リーグを1つずつ順番に処理（並列なし → 429レート制限を回避）
 - [x] .github/workflows/refresh-matches.yml を直接DB書き込み方式に全面更新（pnpm対応）
-- [ ] GitHub SecretsにDATABASE_URLを追加（ユーザー作業）
-- [ ] GitHubに新しいワークフローをプッシュ（ユーザー作業）
-- [ ] GitHub Actionsで手動実行して動作確認（ユーザー作業）
+- [x] GitHub SecretsにDATABASE_URLを追加（ユーザー作業）
+- [x] GitHubに新しいワークフローをプッシュ（ユーザー作業）
+- [x] GitHub Actionsで手動実行して動作確認（ユーザー作業）
 
 ## ワールドカップ2026データ取得・表示機能追加（2026-05-22）
 
@@ -310,13 +310,13 @@
 - [x] server/routers.tsのsingleCategoryEnumにworld_cupを追加
 - [x] client/src/pages/Home.tsxに「W杯2026」タブを追加（worldcup_upcoming）
 - [x] チェックポイント保存（ead8eed6）
-- [ ] GitHub Actionsで再実行してWC2026データを取得（ユーザー作業）
+- [x] GitHub Actionsで再実行してWC2026データを取得（ユーザー作業）
 
 ## 代表戦タブ・親善試合リーグID変更（2026-05-25）
 
 - [x] TheSportsDBで親善試合の現行リーグIDを調査（4395→4562、Japan vs Iceland=R16/2026シーズンで確認）
 - [x] shared/leagues.tsの親善試合エントリを4395→4562に変更（fixedSeason:"2026"、R1〜R20）
-- [ ] GitHub Actionsで再実行してJapan vs Iceland等の親善試合データを取得（ユーザー作業）
+- [x] GitHub Actionsで再実行してJapan vs Iceland等の親善試合データを取得（ユーザー作業）
 
 ## WC2026表示問題の修正（2026-06-10）
 
@@ -345,4 +345,4 @@
 - [x] TheSportsDBの2026-27プレミアリーグ取得範囲・ラウンド設定を確認する
 - [x] 取得漏れまたは表示範囲の問題を修正する
 - [x] プレミアリーグおよび主要欧州リーグの2026-27試合を再検証する
-- [ ] テスト・チェックポイント保存・GitHub反映手順を確認する
+- [x] テスト・チェックポイント保存・GitHub反映手順を確認する
