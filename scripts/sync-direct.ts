@@ -20,6 +20,7 @@ import { syncOneLeague } from "../server/syncMatches.js";
 import { getDb } from "../server/db.js";
 import { syncLog, matches } from "../drizzle/schema.js";
 import { eq, and } from "drizzle-orm";
+import { ESPN_EURO_LEAGUE_BY_ID, syncEspnLeagueSchedule } from "./espnPremierLeague.js";
 
 // 環境変数チェック
 if (!process.env.DATABASE_URL) {
@@ -364,6 +365,7 @@ if (db) {
   }
 }
 
+if (isWc2026Only) {
 // ─── WC2026 を worldcup26.ir から取得 ───
 console.log("\n[sync-direct] ===== ワールドカップ2026 (worldcup26.ir) =====");
 try {
@@ -382,11 +384,33 @@ try {
   console.error(`[sync-direct] ERROR: ${msg}`);
   allErrors.push(msg);
 }
+}
 
 // ─── TheSportsDB リーグを順番に処理 ───
 if (!isWc2026Only) {
   for (const league of targetLeagues) {
     console.log(`\n[sync-direct] ===== ${league.nameJp} (${league.id}) =====`);
+    const espnLeague = ESPN_EURO_LEAGUE_BY_ID.get(league.id);
+    if (espnLeague) {
+      console.log("[sync-direct] " + league.nameJp + ": ESPN公開APIから2026-27全日程を同期");
+      try {
+        const result = await syncEspnLeagueSchedule(db, espnLeague);
+        totalFetched += result.fetched;
+        totalUpserted += result.upserted;
+        allErrors.push(...result.errors);
+        console.log(
+          "[sync-direct] " + league.nameJp + " (ESPN): fetched=" + result.fetched + " upserted=" + result.upserted + " errors=" + result.errors.length,
+        );
+        if (result.errors.length > 0) {
+          result.errors.forEach((entry) => console.warn("  [error] " + entry));
+        }
+      } catch (error) {
+        const message = league.nameJp + " (ESPN): " + (error as Error).message;
+        console.error("[sync-direct] ERROR: " + message);
+        allErrors.push(message);
+      }
+      continue;
+    }
     try {
       const result = await syncOneLeague(league);
       totalFetched += result.fetched;

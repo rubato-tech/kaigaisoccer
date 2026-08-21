@@ -1,0 +1,17 @@
+{
+  "query": "SELECT leagueId, leagueNameJp, COUNT(*) AS fixtures, MIN(DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(kickoffUtcMs / 1000), '+00:00', '+09:00'), '%Y-%m-%d')) AS first_jst, MAX(DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(kickoffUtcMs / 1000), '+00:00', '+09:00'), '%Y-%m-%d')) AS last_jst FROM matches WHERE season = '2026-2027' AND category IN ('euro_league', 'uefa', 'cup') GROUP BY leagueId, leagueNameJp ORDER BY FIELD(leagueId, '4328', '4335', '4332', '4331', '4334'), leagueNameJp;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT leagueId, leagueNameJp, COUNT(*) AS fixtures, MIN(DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(kickoffUtcMs / 1000), '+00:00', '+09:00'), '%Y-%m-%d')) AS first_jst, MAX(DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(kickoffUtcMs / 1000), '+00:00', '+09:00'), '%Y-%m-%d')) AS last_jst FROM matches WHERE season = '2026-2027' AND category IN ('euro_league', 'uefa', 'cup') GROUP BY leagueId, leagueNameJp ORDER BY FIELD(leagueId, '4328', '4335', '4332', '4331', '4334'), leagueNameJp;",
+  "rows": [
+    {
+      "leagueId": "4328",
+      "leagueNameJp": "プレミアリーグ",
+      "fixtures": "380",
+      "first_jst": "2026-08-22",
+      "last_jst": "2027-05-31"
+    }
+  ],
+  "messages": [],
+  "stdout": "leagueId\tleagueNameJp\tfixtures\tfirst_jst\tlast_jst\n4328\tプレミアリーグ\t380\t2026-08-22\t2027-05-31\n",
+  "stderr": "",
+  "execution_time_ms": 1767
+}

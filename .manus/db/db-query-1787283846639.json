@@ -1,0 +1,37 @@
+{
+  "query": "SELECT COUNT(*) AS premier_2026_27_total, MIN(kickoffUtcMs) AS first_kickoff_utc, MAX(kickoffUtcMs) AS last_kickoff_utc FROM matches WHERE leagueId = '4328' AND season = '2026-2027'; SELECT homeTeam, awayTeam, DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(kickoffUtcMs / 1000), '+00:00', '+09:00'), '%Y-%m-%d %H:%i') AS kickoff_jst, round FROM matches WHERE leagueId = '4328' AND season = '2026-2027' AND (homeTeam LIKE '%Brighton%' OR homeTeam LIKE '%Manchester City%') ORDER BY kickoffUtcMs LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT COUNT(*) AS premier_2026_27_total, MIN(kickoffUtcMs) AS first_kickoff_utc, MAX(kickoffUtcMs) AS last_kickoff_utc FROM matches WHERE leagueId = '4328' AND season = '2026-2027'; SELECT homeTeam, awayTeam, DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(kickoffUtcMs / 1000), '+00:00', '+09:00'), '%Y-%m-%d %H:%i') AS kickoff_jst, round FROM matches WHERE leagueId = '4328' AND season = '2026-2027' AND (homeTeam LIKE '%Brighton%' OR homeTeam LIKE '%Manchester City%') ORDER BY kickoffUtcMs LIMIT 20;",
+  "rows": [
+    {
+      "premier_2026_27_total": "380",
+      "first_kickoff_utc": "1787338800000",
+      "last_kickoff_utc": "1811689200000"
+    }
+  ],
+  "messages": [
+    "homeTeam\tawayTeam\tkickoff_jst\tround",
+    "Manchester City\tAFC Bournemouth\t2026-08-23 22:00\tNULL",
+    "Brighton & Hove Albion\tAston Villa\t2026-08-23 22:00\tNULL",
+    "Manchester City\tCoventry City\t2026-09-05 23:00\tNULL",
+    "Brighton & Hove Albion\tLeeds United\t2026-09-05 23:00\tNULL",
+    "Brighton & Hove Albion\tArsenal\t2026-09-19 23:00\tNULL",
+    "Manchester City\tSunderland\t2026-09-19 23:00\tNULL",
+    "Manchester City\tIpswich Town\t2026-10-17 23:00\tNULL",
+    "Brighton & Hove Albion\tCrystal Palace\t2026-10-18 22:00\tNULL",
+    "Manchester City\tBrighton & Hove Albion\t2026-11-01 00:00\tNULL",
+    "Brighton & Hove Albion\tBrentford\t2026-11-08 00:00\tNULL",
+    "Manchester City\tFulham\t2026-11-22 00:00\tNULL",
+    "Brighton & Hove Albion\tNewcastle United\t2026-11-29 00:00\tNULL",
+    "Manchester City\tLeeds United\t2026-12-03 05:00\tNULL",
+    "Brighton & Hove Albion\tEverton\t2026-12-13 00:00\tNULL",
+    "Manchester City\tChelsea\t2026-12-13 00:00\tNULL",
+    "Brighton & Hove Albion\tIpswich Town\t2026-12-20 00:00\tNULL",
+    "Manchester City\tHull City\t2026-12-20 00:00\tNULL",
+    "Manchester City\tTottenham Hotspur\t2027-01-03 00:00\tNULL",
+    "Brighton & Hove Albion\tManchester United\t2027-01-03 00:00\tNULL",
+    "Brighton & Hove Albion\tAFC Bournemouth\t2027-01-07 05:00\tNULL"
+  ],
+  "stdout": "premier_2026_27_total\tfirst_kickoff_utc\tlast_kickoff_utc\n380\t1787338800000\t1811689200000\nhomeTeam\tawayTeam\tkickoff_jst\tround\nManchester City\tAFC Bournemouth\t2026-08-23 22:00\tNULL\nBrighton & Hove Albion\tAston Villa\t2026-08-23 22:00\tNULL\nManchester City\tCoventry City\t2026-09-05 23:00\tNULL\nBrighton & Hove Albion\tLeeds United\t2026-09-05 23:00\tNULL\nBrighton & Hove Albion\tArsenal\t2026-09-19 23:00\tNULL\nManchester City\tSunderland\t2026-09-19 23:00\tNULL\nManchester City\tIpswich Town\t2026-10-17 23:00\tNULL\nBrighton & Hove Albion\tCrystal Palace\t2026-10-18 22:00\tNULL\nManchester City\tBrighton & Hove Albion\t2026-11-01 00:00\tNULL\nBrighton & Hove Albion\tBrentford\t2026-11-08 00:00\tNULL\nManchester City\tFulham\t2026-11-22 00:00\tNULL\nBrighton & Hove Albion\tNewcastle United\t2026-11-29 00:00\tNULL\nManchester City\tLeeds United\t2026-12-03 05:00\tNULL\nBrighton & Hove Albion\tEverton\t2026-12-13 00:00\tNULL\nManchester City\tChelsea\t2026-12-13 00:00\tNULL\nBrighton & Hove Albion\tIpswich Town\t2026-12-20 00:00\tNULL\nManchester City\tHull City\t2026-12-20 00:00\tNULL\nManchester City\tTottenham Hotspur\t2027-01-03 00:00\tNULL\nBrighton & Hove Albion\tManchester United\t2027-01-03 00:00\tNULL\nBrighton & Hove Albion\tAFC Bournemouth\t2027-01-07 05:00\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 2128
+}

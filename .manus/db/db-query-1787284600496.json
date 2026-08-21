@@ -1,0 +1,45 @@
+{
+  "query": "SELECT leagueId, leagueNameJp, COUNT(*) AS fixtures, MIN(DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(kickoffUtcMs / 1000), '+00:00', '+09:00'), '%Y-%m-%d')) AS first_jst, MAX(DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(kickoffUtcMs / 1000), '+00:00', '+09:00'), '%Y-%m-%d')) AS last_jst FROM matches WHERE season = '2026-2027' AND leagueId IN ('4328', '4335', '4332', '4331', '4334') GROUP BY leagueId, leagueNameJp ORDER BY leagueId;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user rbSGKqEDtGPFuT4.root --database RaqPabotonJ74A6GpXWVTN --execute SELECT leagueId, leagueNameJp, COUNT(*) AS fixtures, MIN(DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(kickoffUtcMs / 1000), '+00:00', '+09:00'), '%Y-%m-%d')) AS first_jst, MAX(DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(kickoffUtcMs / 1000), '+00:00', '+09:00'), '%Y-%m-%d')) AS last_jst FROM matches WHERE season = '2026-2027' AND leagueId IN ('4328', '4335', '4332', '4331', '4334') GROUP BY leagueId, leagueNameJp ORDER BY leagueId;",
+  "rows": [
+    {
+      "leagueId": "4328",
+      "leagueNameJp": "プレミアリーグ",
+      "fixtures": "380",
+      "first_jst": "2026-08-22",
+      "last_jst": "2027-05-31"
+    },
+    {
+      "leagueId": "4331",
+      "leagueNameJp": "ブンデスリーガ",
+      "fixtures": "306",
+      "first_jst": "2026-08-29",
+      "last_jst": "2027-05-22"
+    },
+    {
+      "leagueId": "4332",
+      "leagueNameJp": "セリエA",
+      "fixtures": "380",
+      "first_jst": "2026-08-23",
+      "last_jst": "2027-05-31"
+    },
+    {
+      "leagueId": "4334",
+      "leagueNameJp": "リーグ・アン",
+      "fixtures": "306",
+      "first_jst": "2026-08-22",
+      "last_jst": "2027-05-30"
+    },
+    {
+      "leagueId": "4335",
+      "leagueNameJp": "ラ・リーガ",
+      "fixtures": "380",
+      "first_jst": "2026-08-16",
+      "last_jst": "2027-05-31"
+    }
+  ],
+  "messages": [],
+  "stdout": "leagueId\tleagueNameJp\tfixtures\tfirst_jst\tlast_jst\n4328\tプレミアリーグ\t380\t2026-08-22\t2027-05-31\n4331\tブンデスリーガ\t306\t2026-08-29\t2027-05-22\n4332\tセリエA\t380\t2026-08-23\t2027-05-31\n4334\tリーグ・アン\t306\t2026-08-22\t2027-05-30\n4335\tラ・リーガ\t380\t2026-08-16\t2027-05-31\n",
+  "stderr": "",
+  "execution_time_ms": 1828
+}
