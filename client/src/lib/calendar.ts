@@ -89,3 +89,21 @@ export function downloadIcs(filename: string, content: string) {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+
+/** TimeTree公式ヘルプ: 端末標準カレンダーをTimeTreeに表示する設定 */
+export const TIMETREE_EXTERNAL_CALENDAR_HELP_URL =
+  "https://support.timetreeapp.com/hc/ja/articles/360000629341-%E4%BB%96%E3%81%AE%E3%82%AB%E3%83%AC%E3%83%B3%E3%83%80%E3%83%BC%E3%82%92%E5%88%A9%E7%94%A8%E3%81%97%E3%81%9F%E3%81%84-Google-%E3%82%AB%E3%83%AC%E3%83%B3%E3%83%80%E3%83%BC%E3%81%AA%E3%81%A9";
+
+/**
+ * TimeTreeで利用できる標準iCalendar（.ics）ファイルをダウンロードする。
+ * TimeTreeには外部アプリから予定を直接登録する公開APIがないため、
+ * 端末標準カレンダーへ読み込んでTimeTree上に表示する公式方式を採用する。
+ */
+export function downloadTimeTreeIcs(matches: Match[], filename: string, calendarName: string) {
+  downloadIcs(filename, buildIcs(matches, calendarName));
+}
+
+/** TimeTreeへの取り込みに必要な次の操作を案内する文言 */
+export function getTimeTreeImportMessage(eventCount: number): string {
+  return `${eventCount}件のiCalendarファイルをダウンロードしました。端末のカレンダーに追加後、TimeTreeで外部カレンダーの表示を有効にしてください。`;
+}

@@ -12,6 +12,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/\_core/hooks/useAuth";
 import { TEAM_NAME_JP } from "@shared/teamNames";
 import { toast } from "sonner";
+import { TIMETREE_EXTERNAL_CALENDAR_HELP_URL } from "@/lib/calendar";
 
 const LS_KEY = "fav_teams_v1";
 
@@ -186,7 +187,16 @@ export function FavoriteTeams({ onFavsChange }: Props) {
             }}
           >
             <Download className="h-3.5 w-3.5" />
-            iCal ダウンロード
+            TimeTree / iCal
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 gap-1.5 text-xs text-muted-foreground"
+            onClick={() => window.open(TIMETREE_EXTERNAL_CALENDAR_HELP_URL, "_blank", "noopener,noreferrer")}
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            TimeTreeの設定
           </Button>
           <Button
             size="sm"
@@ -207,7 +217,7 @@ export function FavoriteTeams({ onFavsChange }: Props) {
       )}
       {favs.length > 0 && !user && (
         <p className="text-xs text-muted-foreground">
-          ログインするとiCalフィードでGoogleカレンダーに同期できます。
+          ログインするとiCalフィードをGoogleカレンダーまたはTimeTreeで利用できます。
         </p>
       )}
     </div>

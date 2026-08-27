@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { CalendarX2, CalendarPlus, MapPin, Youtube, Clock } from "lucide-react";
+import React, { useMemo } from "react";
+import { CalendarX2, CalendarPlus, MapPin, Youtube, Clock, Download } from "lucide-react";
 import type { Match } from "../../../drizzle/schema";
 import { toJstDisplay } from "@shared/datetime";
 import { teamNameJp, leagueDisplayJp } from "@shared/teamNames";
@@ -7,6 +7,7 @@ import { LEAGUES } from "@shared/leagues";
 import { AdBanner } from "@/components/AdBanner";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { downloadTimeTreeIcs, getTimeTreeImportMessage, TIMETREE_EXTERNAL_CALENDAR_HELP_URL } from "@/lib/calendar";
 
 /** リーグIDから現地タイムゾーンを返す */
 const REGION_TZ: Record<string, string> = {
@@ -187,7 +188,33 @@ export function MatchScheduleTable({ matches, showScore, emptyText, showLocalTim
                             }}
                           >
                             <CalendarPlus className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">カレンダー</span>
+                            <span className="hidden sm:inline">Google</span>
+                          </Button>
+                        )}
+                        {!showScore && match.status === "scheduled" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 gap-1 px-1.5 text-[10px] text-muted-foreground hover:text-primary"
+                            title="TimeTree用のiCalendarファイルをダウンロード"
+                            onClick={() => {
+                              const home = teamNameJp(match.homeTeam);
+                              const away = teamNameJp(match.awayTeam);
+                              downloadTimeTreeIcs(
+                                [match],
+                                `timetree-${match.eventId}.ics`,
+                                `観戦予定 - ${home} vs ${away}`,
+                              );
+                              toast.success(getTimeTreeImportMessage(1), {
+                                action: {
+                                  label: "設定手順",
+                                  onClick: () => window.open(TIMETREE_EXTERNAL_CALENDAR_HELP_URL, "_blank", "noopener,noreferrer"),
+                                },
+                              });
+                            }}
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            <span>TimeTree</span>
                           </Button>
                         )}
                       </div>

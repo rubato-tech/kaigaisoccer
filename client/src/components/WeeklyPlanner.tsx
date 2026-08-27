@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { teamNameJp, leagueDisplayJp } from "@shared/teamNames";
 import { toJstDisplay } from "@shared/datetime";
-import { buildGcalUrl, buildIcs, downloadIcs } from "@/lib/calendar";
+import { buildGcalUrl, downloadTimeTreeIcs, getTimeTreeImportMessage, TIMETREE_EXTERNAL_CALENDAR_HELP_URL } from "@/lib/calendar";
 import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
 import { WATCHLIST_KEY, readStringArray, writeStringArray } from "@/lib/storage";
 
@@ -84,9 +84,13 @@ export function WeeklyPlanner({ matches, days = 7 }: Props) {
       toast.info("観戦予定リストが空です。試合にチェックを入れてください。");
       return;
     }
-    const ics = buildIcs(watchlistMatches, "観戦予定 - kaigaisoccer.com");
-    downloadIcs("watchlist.ics", ics);
-    toast.success(`${watchlistMatches.length} 件の ICS ファイルをダウンロードしました。`);
+    downloadTimeTreeIcs(watchlistMatches, "timetree-watchlist.ics", "観戦予定 - kaigaisoccer.com");
+    toast.success(getTimeTreeImportMessage(watchlistMatches.length), {
+      action: {
+        label: "設定手順",
+        onClick: () => window.open(TIMETREE_EXTERNAL_CALENDAR_HELP_URL, "_blank", "noopener,noreferrer"),
+      },
+    });
   }, [watchlistMatches]);
 
   if (upcoming.length === 0) {
@@ -107,7 +111,7 @@ export function WeeklyPlanner({ matches, days = 7 }: Props) {
             今週の観戦プランナー
           </h2>
           <p className="text-sm text-muted-foreground">
-            観たい試合にチェックを入れて、まとめてGoogleカレンダーに追加できます。
+            観たい試合にチェックを入れて、GoogleカレンダーまたはTimeTree対応iCalendarに追加できます。
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -124,7 +128,7 @@ export function WeeklyPlanner({ matches, days = 7 }: Props) {
             className="gap-1.5"
           >
             <Download className="h-3.5 w-3.5" />
-            ICS
+            TimeTree / iCal
           </Button>
           {isConfigured ? (
             <Button
@@ -145,7 +149,7 @@ export function WeeklyPlanner({ matches, days = 7 }: Props) {
               className="gap-1.5"
             >
               <CalendarPlus className="h-3.5 w-3.5" />
-              ICSでダウンロード
+              TimeTree / iCal
             </Button>
           )}
           {watchlistIds.size > 0 && (

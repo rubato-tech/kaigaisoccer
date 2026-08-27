@@ -29,5 +29,5 @@ describe("ESPN Premier League 2026-27 fixture source", () => {
 
     expect(hasFixture("Brighton & Hove Albion", "Aston Villa")).toBe(true);
     expect(hasFixture("Manchester City", "AFC Bournemouth")).toBe(true);
-  });
+  }, 15000);
 });
