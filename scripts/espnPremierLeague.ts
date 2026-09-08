@@ -1,13 +1,16 @@
 /**
- * ESPN公開APIを用いた2026-27欧州主要リーグの日程同期。
+ * ESPN公開APIを用いた2026-27欧州大会の日程同期。
  *
- * TheSportsDBの2026-27各ラウンドは一部カードしか返らないため、
- * ESPNの公開スコアボードから公式発表後のシーズン全日程を取得する。
+ * TheSportsDB無料APIは新シーズンの一部ラウンドしか返さない場合があるため、
+ * ESPNが公開しているリーグ戦・UEFA大会・一部国内カップはESPNを優先する。
+ * 抽選未実施のカップ戦（FAカップ等）はTheSportsDBのラウンド同期を継続する。
  */
 import { and, eq } from "drizzle-orm";
 import { matches } from "../drizzle/schema.js";
 import { getDb } from "../server/db.js";
-import { JAPANESE_PLAYER_TEAMS } from "../shared/leagues.js";
+import { JAPANESE_PLAYER_TEAMS, type Category } from "../shared/leagues.js";
+
+type EspnCategory = Extract<Category, "euro_league" | "cup" | "uefa">;
 
 export interface EspnLeagueConfig {
   leagueId: string;
@@ -15,78 +18,50 @@ export interface EspnLeagueConfig {
   nameJp: string;
   nameEn: string;
   badgeUrl: string;
+  category: EspnCategory;
   season: string;
   startDate: string;
   endDate: string;
-  expectedFixtures: number;
+  /** 全日程が確定するリーグ戦などの厳密な試合数 */
+  expectedFixtures?: number;
+  /** 抽選進行中の大会など、同期を許可する最低試合数 */
+  minimumFixtures?: number;
 }
 
+const SEASON = "2026-2027";
+const SEASON_END = "20270531";
+
 export const ESPN_EURO_LEAGUES: EspnLeagueConfig[] = [
-  {
-    leagueId: "4328",
-    espnLeagueCode: "eng.1",
-    nameJp: "プレミアリーグ",
-    nameEn: "English Premier League",
-    badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/eng.1.png",
-    season: "2026-2027",
-    startDate: "20260821",
-    endDate: "20270530",
-    expectedFixtures: 380,
-  },
-  {
-    leagueId: "4335",
-    espnLeagueCode: "esp.1",
-    nameJp: "ラ・リーガ",
-    nameEn: "Spanish La Liga",
-    badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/esp.1.png",
-    season: "2026-2027",
-    startDate: "20260814",
-    endDate: "20270531",
-    expectedFixtures: 380,
-  },
-  {
-    leagueId: "4332",
-    espnLeagueCode: "ita.1",
-    nameJp: "セリエA",
-    nameEn: "Italian Serie A",
-    badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/ita.1.png",
-    season: "2026-2027",
-    startDate: "20260822",
-    endDate: "20270531",
-    expectedFixtures: 380,
-  },
-  {
-    leagueId: "4331",
-    espnLeagueCode: "ger.1",
-    nameJp: "ブンデスリーガ",
-    nameEn: "German Bundesliga",
-    badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/ger.1.png",
-    season: "2026-2027",
-    startDate: "20260828",
-    endDate: "20270531",
-    expectedFixtures: 306,
-  },
-  {
-    leagueId: "4334",
-    espnLeagueCode: "fra.1",
-    nameJp: "リーグ・アン",
-    nameEn: "French Ligue 1",
-    badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/fra.1.png",
-    season: "2026-2027",
-    startDate: "20260814",
-    endDate: "20270531",
-    expectedFixtures: 306,
-  },
+  // 欧州リーグ戦
+  { leagueId: "4328", espnLeagueCode: "eng.1", nameJp: "プレミアリーグ", nameEn: "English Premier League", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/eng.1.png", category: "euro_league", season: SEASON, startDate: "20260821", endDate: SEASON_END, expectedFixtures: 380 },
+  { leagueId: "4335", espnLeagueCode: "esp.1", nameJp: "ラ・リーガ", nameEn: "Spanish La Liga", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/esp.1.png", category: "euro_league", season: SEASON, startDate: "20260814", endDate: SEASON_END, expectedFixtures: 380 },
+  { leagueId: "4332", espnLeagueCode: "ita.1", nameJp: "セリエA", nameEn: "Italian Serie A", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/ita.1.png", category: "euro_league", season: SEASON, startDate: "20260822", endDate: SEASON_END, expectedFixtures: 380 },
+  { leagueId: "4331", espnLeagueCode: "ger.1", nameJp: "ブンデスリーガ", nameEn: "German Bundesliga", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/ger.1.png", category: "euro_league", season: SEASON, startDate: "20260828", endDate: SEASON_END, expectedFixtures: 306 },
+  { leagueId: "4334", espnLeagueCode: "fra.1", nameJp: "リーグ・アン", nameEn: "French Ligue 1", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/fra.1.png", category: "euro_league", season: SEASON, startDate: "20260821", endDate: SEASON_END, expectedFixtures: 306 },
+  { leagueId: "4330", espnLeagueCode: "sco.1", nameJp: "スコティッシュ・プレミアシップ", nameEn: "Scottish Premiership", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/sco.1.png", category: "euro_league", season: SEASON, startDate: "20260801", endDate: "20270430", minimumFixtures: 190 },
+  { leagueId: "4337", espnLeagueCode: "ned.1", nameJp: "エールディビジ", nameEn: "Dutch Eredivisie", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/ned.1.png", category: "euro_league", season: SEASON, startDate: "20260807", endDate: SEASON_END, expectedFixtures: 306 },
+  { leagueId: "4338", espnLeagueCode: "bel.1", nameJp: "ジュピラー・プロ・リーグ", nameEn: "Belgian Pro League", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/bel.1.png", category: "euro_league", season: SEASON, startDate: "20260807", endDate: SEASON_END, expectedFixtures: 306 },
+  { leagueId: "4344", espnLeagueCode: "por.1", nameJp: "プリメイラ・リーガ", nameEn: "Portuguese Primeira Liga", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/por.1.png", category: "euro_league", season: SEASON, startDate: "20260807", endDate: SEASON_END, expectedFixtures: 306 },
+  { leagueId: "4339", espnLeagueCode: "tur.1", nameJp: "スュペル・リグ", nameEn: "Turkish Super Lig", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/tur.1.png", category: "euro_league", season: SEASON, startDate: "20260814", endDate: SEASON_END, expectedFixtures: 306 },
+  { leagueId: "4329", espnLeagueCode: "eng.2", nameJp: "チャンピオンシップ", nameEn: "English League Championship", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/eng.2.png", category: "euro_league", season: SEASON, startDate: "20260814", endDate: "20270501", expectedFixtures: 552 },
+  // 国内カップ（抽選済みカードのみ。未決定ラウンドは今後の同期で追加）
+  { leagueId: "4570", espnLeagueCode: "eng.league_cup", nameJp: "EFLカップ", nameEn: "EFL Cup", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/eng.league_cup.png", category: "cup", season: SEASON, startDate: "20260801", endDate: SEASON_END, minimumFixtures: 60 },
+  { leagueId: "4506", espnLeagueCode: "ita.coppa_italia", nameJp: "コッパ・イタリア", nameEn: "Coppa Italia", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/ita.coppa_italia.png", category: "cup", season: SEASON, startDate: "20260801", endDate: SEASON_END, expectedFixtures: 45 },
+  { leagueId: "4485", espnLeagueCode: "ger.dfb_pokal", nameJp: "DFBポカール", nameEn: "DFB-Pokal", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/ger.dfb_pokal.png", category: "cup", season: SEASON, startDate: "20260801", endDate: SEASON_END, minimumFixtures: 40 },
+  // UEFA大会（リーグフェーズの確定カードを同期。決勝Tは組み合わせ確定後に自動追加）
+  { leagueId: "4480", espnLeagueCode: "uefa.champions", nameJp: "チャンピオンズリーグ", nameEn: "UEFA Champions League", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/uefa.champions.png", category: "uefa", season: SEASON, startDate: "20260801", endDate: SEASON_END, minimumFixtures: 144 },
+  { leagueId: "4481", espnLeagueCode: "uefa.europa", nameJp: "ヨーロッパリーグ", nameEn: "UEFA Europa League", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/uefa.europa.png", category: "uefa", season: SEASON, startDate: "20260801", endDate: SEASON_END, minimumFixtures: 144 },
+  { leagueId: "5071", espnLeagueCode: "uefa.europa.conf", nameJp: "カンファレンスリーグ", nameEn: "UEFA Conference League", badgeUrl: "https://a.espncdn.com/i/leaguelogos/soccer/500/uefa.europa.conf.png", category: "uefa", season: SEASON, startDate: "20260801", endDate: SEASON_END, minimumFixtures: 108 },
 ];
 
 export const ESPN_EURO_LEAGUE_BY_ID = new Map(
   ESPN_EURO_LEAGUES.map((league) => [league.leagueId, league]),
 );
 
-export const ESPN_PREMIER_LEAGUE_URL = buildEspnScoreboardUrl(ESPN_EURO_LEAGUES[0]);
+export const ESPN_PREMIER_LEAGUE_URL = buildEspnScoreboardUrl(ESPN_EURO_LEAGUES[0]!);
 
 export function buildEspnScoreboardUrl(league: EspnLeagueConfig): string {
-  return `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnLeagueCode}/scoreboard?dates=${league.startDate}-${league.endDate}&limit=500`;
+  return `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnLeagueCode}/scoreboard?dates=${league.startDate}-${league.endDate}&limit=600`;
 }
 
 interface EspnTeam {
@@ -118,10 +93,7 @@ interface EspnScoreboard {
 }
 
 function normalizedTeamName(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]/g, "");
+  return value.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]/g, "");
 }
 
 function detectJapanesePlayerTag(homeTeam: string, awayTeam: string): string | null {
@@ -146,9 +118,19 @@ function numericScore(value: string | number | null | undefined): number | null 
   return Number.isFinite(score) ? score : null;
 }
 
+function validateFixtureCount(league: EspnLeagueConfig, eventCount: number): string | null {
+  if (league.expectedFixtures !== undefined && eventCount !== league.expectedFixtures) {
+    return `ESPN APIの試合数が想定と一致しません（${eventCount}/${league.expectedFixtures}件）`;
+  }
+  if (league.minimumFixtures !== undefined && eventCount < league.minimumFixtures) {
+    return `ESPN APIの試合数が同期下限を下回っています（${eventCount}/${league.minimumFixtures}件）`;
+  }
+  return null;
+}
+
 /**
- * 指定した2026-27欧州主要リーグをESPN公開APIからシーズン全件同期する。
- * 同リーグ・同シーズンの既存データを置き換え、不完全なTheSportsDBデータを残さない。
+ * ESPN公開APIから大会の全公開済み日程を同期する。
+ * 同一大会・シーズンの既存データを置換し、不完全なTheSportsDBデータを残さない。
  */
 export async function syncEspnLeagueSchedule(
   db: Awaited<ReturnType<typeof getDb>>,
@@ -160,23 +142,14 @@ export async function syncEspnLeagueSchedule(
   const response = await fetch(buildEspnScoreboardUrl(league), {
     headers: { "User-Agent": "soccer-schedule-jp/1.0" },
   });
-  if (!response.ok) {
-    return { fetched: 0, upserted: 0, errors: [`ESPN API HTTP ${response.status}`] };
-  }
+  if (!response.ok) return { fetched: 0, upserted: 0, errors: [`ESPN API HTTP ${response.status}`] };
 
   const payload = (await response.json()) as EspnScoreboard;
   const events = payload.events ?? [];
-  if (events.length !== league.expectedFixtures) {
-    return {
-      fetched: events.length,
-      upserted: 0,
-      errors: [`ESPN APIの試合数が想定と一致しません（${events.length}/${league.expectedFixtures}件）`],
-    };
-  }
+  const countError = validateFixtureCount(league, events.length);
+  if (countError) return { fetched: events.length, upserted: 0, errors: [countError] };
 
-  await db
-    .delete(matches)
-    .where(and(eq(matches.leagueId, league.leagueId), eq(matches.season, league.season)));
+  await db.delete(matches).where(and(eq(matches.leagueId, league.leagueId), eq(matches.season, league.season)));
 
   let upserted = 0;
   for (const event of events) {
@@ -187,56 +160,48 @@ export async function syncEspnLeagueSchedule(
       const homeTeam = home?.team?.displayName;
       const awayTeam = away?.team?.displayName;
       const kickoffUtcMs = event.date ? Date.parse(event.date) : Number.NaN;
-
       if (!event.id || !homeTeam || !awayTeam || Number.isNaN(kickoffUtcMs)) {
         errors.push(`invalid ESPN event: ${event.id ?? "unknown"}`);
         continue;
       }
-
       const status = statusFromEspn(event);
-      const homeScore = status === "scheduled" ? null : numericScore(home?.score);
-      const awayScore = status === "scheduled" ? null : numericScore(away?.score);
-
-      await db
-        .insert(matches)
-        .values({
-          eventId: `espn_${league.leagueId}_${event.id}`,
-          category: "euro_league",
-          leagueId: league.leagueId,
-          leagueNameJp: league.nameJp,
-          leagueNameEn: league.nameEn,
-          leagueBadge: league.badgeUrl,
-          season: league.season,
-          round: event.week?.number ? String(event.week.number) : null,
-          homeTeamId: home?.team?.id ?? null,
-          homeTeam,
-          homeTeamBadge: home?.team?.logo ?? home?.team?.logos?.[0]?.href ?? null,
-          awayTeamId: away?.team?.id ?? null,
-          awayTeam: awayTeam,
-          awayTeamBadge: away?.team?.logo ?? away?.team?.logos?.[0]?.href ?? null,
+      await db.insert(matches).values({
+        eventId: `espn_${league.leagueId}_${event.id}`,
+        category: league.category,
+        leagueId: league.leagueId,
+        leagueNameJp: league.nameJp,
+        leagueNameEn: league.nameEn,
+        leagueBadge: league.badgeUrl,
+        season: league.season,
+        round: event.week?.number ? String(event.week.number) : null,
+        homeTeamId: home?.team?.id ?? null,
+        homeTeam,
+        homeTeamBadge: home?.team?.logo ?? home?.team?.logos?.[0]?.href ?? null,
+        awayTeamId: away?.team?.id ?? null,
+        awayTeam,
+        awayTeamBadge: away?.team?.logo ?? away?.team?.logos?.[0]?.href ?? null,
+        kickoffUtcMs,
+        status,
+        homeScore: status === "scheduled" ? null : numericScore(home?.score),
+        awayScore: status === "scheduled" ? null : numericScore(away?.score),
+        venue: competition?.venue?.fullName ?? null,
+        tags: detectJapanesePlayerTag(homeTeam, awayTeam),
+      }).onDuplicateKeyUpdate({
+        set: {
+          category: league.category,
           kickoffUtcMs,
           status,
-          homeScore,
-          awayScore,
+          homeScore: status === "scheduled" ? null : numericScore(home?.score),
+          awayScore: status === "scheduled" ? null : numericScore(away?.score),
           venue: competition?.venue?.fullName ?? null,
+          round: event.week?.number ? String(event.week.number) : null,
           tags: detectJapanesePlayerTag(homeTeam, awayTeam),
-        })
-        .onDuplicateKeyUpdate({
-          set: {
-            kickoffUtcMs,
-            status,
-            homeScore,
-            awayScore,
-            venue: competition?.venue?.fullName ?? null,
-            round: event.week?.number ? String(event.week.number) : null,
-            tags: detectJapanesePlayerTag(homeTeam, awayTeam),
-          },
-        });
+        },
+      });
       upserted += 1;
     } catch (error) {
       errors.push(`ESPN event ${event.id ?? "unknown"}: ${(error as Error).message}`);
     }
   }
-
   return { fetched: events.length, upserted, errors };
 }

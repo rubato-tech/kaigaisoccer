@@ -393,11 +393,13 @@ if (!isWc2026Only) {
     const espnLeague = ESPN_EURO_LEAGUE_BY_ID.get(league.id);
     if (espnLeague) {
       console.log("[sync-direct] " + league.nameJp + ": ESPN公開APIから2026-27全日程を同期");
+      let espnSucceeded = false;
       try {
         const result = await syncEspnLeagueSchedule(db, espnLeague);
         totalFetched += result.fetched;
         totalUpserted += result.upserted;
         allErrors.push(...result.errors);
+        espnSucceeded = result.errors.length === 0 && result.upserted > 0;
         console.log(
           "[sync-direct] " + league.nameJp + " (ESPN): fetched=" + result.fetched + " upserted=" + result.upserted + " errors=" + result.errors.length,
         );
@@ -409,7 +411,8 @@ if (!isWc2026Only) {
         console.error("[sync-direct] ERROR: " + message);
         allErrors.push(message);
       }
-      continue;
+      if (espnSucceeded) continue;
+      console.warn("[sync-direct] " + league.nameJp + ": ESPN同期失敗のためTheSportsDB同期を併用");
     }
     try {
       const result = await syncOneLeague(league);
