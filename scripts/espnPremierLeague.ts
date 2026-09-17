@@ -8,7 +8,7 @@
 import { and, eq } from "drizzle-orm";
 import { matches } from "../drizzle/schema.js";
 import { getDb } from "../server/db.js";
-import { JAPANESE_PLAYER_TEAMS, type Category } from "../shared/leagues.js";
+import { isJapanesePlayerTeam, type Category } from "../shared/leagues.js";
 
 type EspnCategory = Extract<Category, "euro_league" | "cup" | "uefa">;
 
@@ -195,16 +195,31 @@ interface EspnScoreboard {
   events?: EspnEvent[];
 }
 
-/** ESPN年別日程を結合し、対象シーズンの期間内にある公開済みカードだけを返す。 */
-export async function fetchEspnLeagueSchedule(league: EspnLeagueConfig): Promise<EspnEvent[]> {
-  const responses = await Promise.all(
-    buildEspnScoreboardUrls(league).map(async (url) => {
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** 一時的なネットワーク障害で不要なTheSportsDBフォールバックを発生させないためのESPN取得リトライ。 */
+async function fetchEspnScoreboard(url: string): Promise<EspnScoreboard> {
+  const maxAttempts = 3;
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
       const response = await fetch(url, {
         headers: { "User-Agent": "soccer-schedule-jp/1.0" },
       });
       if (!response.ok) throw new Error(`ESPN API HTTP ${response.status}`);
       return (await response.json()) as EspnScoreboard;
-    }),
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxAttempts) await sleep(attempt * 1_000);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("ESPN API request failed");
+}
+
+/** ESPN年別日程を結合し、対象シーズンの期間内にある公開済みカードだけを返す。 */
+export async function fetchEspnLeagueSchedule(league: EspnLeagueConfig): Promise<EspnEvent[]> {
+  const responses = await Promise.all(
+    buildEspnScoreboardUrls(league).map(fetchEspnScoreboard),
   );
 
   const startUtcMs = Date.parse(`${league.startDate.slice(0, 4)}-${league.startDate.slice(4, 6)}-${league.startDate.slice(6, 8)}T00:00:00.000Z`);
@@ -218,13 +233,8 @@ export async function fetchEspnLeagueSchedule(league: EspnLeagueConfig): Promise
   return [...eventsById.values()].sort((a, b) => Date.parse(a.date ?? "") - Date.parse(b.date ?? ""));
 }
 
-function normalizedTeamName(value: string): string {
-  return value.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]/g, "");
-}
-
 function detectJapanesePlayerTag(homeTeam: string, awayTeam: string): string | null {
-  const targets = new Set(JAPANESE_PLAYER_TEAMS.map(normalizedTeamName));
-  return targets.has(normalizedTeamName(homeTeam)) || targets.has(normalizedTeamName(awayTeam))
+  return isJapanesePlayerTeam(homeTeam) || isJapanesePlayerTeam(awayTeam)
     ? "japanese_player"
     : null;
 }

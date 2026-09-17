@@ -4,6 +4,10 @@ import {
   fetchEspnLeagueSchedule,
 } from "../scripts/espnPremierLeague";
 
+// 外部ESPN APIの可用性はネットワーク状態に依存するため、通常の回帰テストから分離する。
+// 実行例: RUN_EXTERNAL_INTEGRATION=1 pnpm exec vitest run server/espnPremierLeague.test.ts
+const describeExternal = process.env.RUN_EXTERNAL_INTEGRATION === "1" ? describe : describe.skip;
+
 type EspnFixture = {
   date?: string;
   competitions?: Array<{
@@ -14,7 +18,7 @@ type EspnFixture = {
   }>;
 };
 
-describe("ESPN Premier League 2026-27 fixture source", () => {
+describeExternal("ESPN Premier League 2026-27 fixture source", () => {
   it("provides all 380 fixtures including the 23 August cards", async () => {
     const events = await fetchEspnLeagueSchedule(ESPN_EURO_LEAGUE_BY_ID.get("4328")!) as EspnFixture[];
     expect(events).toHaveLength(380);

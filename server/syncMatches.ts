@@ -14,7 +14,7 @@
  * eventsround.php で取得する方式に統一。
  */
 
-import { JAPANESE_PLAYER_TEAMS, LEAGUES, type LeagueDef } from "@shared/leagues";
+import { isJapanesePlayerTeam, LEAGUES, type LeagueDef } from "@shared/leagues";
 import { getDb } from "./db";
 import { matches as matchesTable, syncLog } from "../drizzle/schema";
 import { sql } from "drizzle-orm";
@@ -37,9 +37,7 @@ interface SyncResult {
 
 function detectTags(homeTeam: string, awayTeam: string): string | null {
   const tags: string[] = [];
-  const involves = (name: string) =>
-    JAPANESE_PLAYER_TEAMS.some((t) => name.toLowerCase() === t.toLowerCase());
-  if (involves(homeTeam) || involves(awayTeam)) {
+  if (isJapanesePlayerTeam(homeTeam) || isJapanesePlayerTeam(awayTeam)) {
     tags.push("japanese_player");
   }
   return tags.length > 0 ? tags.join(",") : null;

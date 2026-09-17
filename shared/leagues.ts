@@ -113,73 +113,72 @@ for (const league of LEAGUES) {
   }
 }
 
+/** 取得元ごとの表記ゆれを吸収する、2026-27シーズンの日本人選手所属クラブ。 */
+export interface JapanesePlayerClub {
+  /** 運用上の代表表記 */
+  name: string;
+  /** 当該クラブに所属する日本人選手。更新監査時の根拠を明確にするため保持する。 */
+  players: readonly string[];
+  /** ESPN / TheSportsDB が返す可能性のあるクラブ名表記 */
+  aliases: readonly string[];
+}
+
 /**
- * 「日本人選手出場試合」を判定するためのチームID/チーム名のリスト。
- * TheSportsDB のチーム名（strHomeTeam/strAwayTeam）にマッチさせる。
- * 2025-26シーズン時点の日本人選手所属クラブ（主要選手）
+ * 2026-27シーズンの確認済み所属クラブ。
+ * 夏・冬の移籍市場終了後に公式クラブ発表またはリーグ公式を根拠として見直す。
  */
-export const JAPANESE_PLAYER_TEAMS: string[] = [
-  // ===== プレミアリーグ =====
-  "Brighton and Hove Albion", // 三笘薫
-  "Liverpool",                // 遠藤航
-  "Crystal Palace",           // 鎌田大地
-  "Brentford",
+export const JAPANESE_PLAYER_CLUBS: readonly JapanesePlayerClub[] = [
+  // ===== イングランド =====
+  { name: "Brighton & Hove Albion", players: ["三笘薫"], aliases: ["Brighton & Hove Albion", "Brighton and Hove Albion", "Brighton"] },
+  { name: "Liverpool", players: ["遠藤航"], aliases: ["Liverpool"] },
+  { name: "Crystal Palace", players: ["鎌田大地", "冨安健洋"], aliases: ["Crystal Palace"] },
+  { name: "Leeds United", players: ["田中碧"], aliases: ["Leeds United"] },
+  { name: "Coventry City", players: ["坂元達裕"], aliases: ["Coventry City"] },
+  { name: "Hull City", players: ["守田英正"], aliases: ["Hull City"] },
+  { name: "Aston Villa", players: ["鈴木彩艶"], aliases: ["Aston Villa"] },
+  { name: "Southampton", players: ["菅原由勢", "高岡伶颯"], aliases: ["Southampton"] },
+  { name: "Queens Park Rangers", players: ["斉藤光毅"], aliases: ["Queens Park Rangers", "QPR"] },
   // ===== ラ・リーガ =====
-  "Real Sociedad",            // 久保建英
-  "Villarreal",
-  // ===== セリエA =====
-  "Parma",                    // 鈴木彩艶
-  "Como",
-  "Venezia",
-  "Cagliari",
-  "Genoa",
+  { name: "Real Sociedad", players: ["久保建英"], aliases: ["Real Sociedad"] },
   // ===== ブンデスリーガ =====
-  "Eintracht Frankfurt",
-  "VfB Stuttgart",            // 伊藤洋輝
-  "Borussia Monchengladbach", // 板倉滉
-  "SC Freiburg",              // 堂安律
-  "FSV Mainz 05",
-  "Bayer Leverkusen",
-  "Borussia Dortmund",
+  { name: "Eintracht Frankfurt", players: ["堂安律", "小杉啓太", "熊代聖人"], aliases: ["Eintracht Frankfurt"] },
+  { name: "Sport-Club Freiburg", players: ["鈴木唯人", "後藤啓介", "山本理仁"], aliases: ["SC Freiburg", "Freiburg", "Sport-Club Freiburg"] },
+  { name: "1. FSV Mainz 05", players: ["佐野海舟", "川﨑颯太"], aliases: ["Mainz", "FSV Mainz 05", "1. FSV Mainz 05"] },
+  { name: "Borussia Mönchengladbach", players: ["町野修斗", "板倉滉", "橋岡大樹", "宇野禅斗"], aliases: ["Borussia Mönchengladbach", "Borussia Monchengladbach", "Borussia M'gladbach"] },
   // ===== リーグ・アン =====
-  "Stade Reims",
-  "AS Monaco",                // 南野拓実
-  "Strasbourg",
-  "Olympique de Marseille",
-  "Paris Saint-Germain",
-  // ===== スコティッシュ・プレミアシップ =====
-  "Celtic",                   // 旗手怜央・前田大然・山田楓喜
-  "Rangers",
+  { name: "AS Monaco", players: ["南野拓実"], aliases: ["AS Monaco", "Monaco"] },
+  { name: "LOSC Lille", players: ["上田綺世"], aliases: ["Lille", "LOSC Lille"] },
+  { name: "Olympique Lyonnais", players: ["中村敬斗"], aliases: ["Lyon", "Olympique Lyonnais"] },
   // ===== エールディビジ =====
-  "Feyenoord",                // 上田綺世・渡辺剛
-  "NEC Nijmegen",
-  "Ajax",
-  "PSV Eindhoven",
-  "AZ Alkmaar",
-  "Twente",
+  { name: "Feyenoord", players: ["渡辺剛"], aliases: ["Feyenoord", "Feyenoord Rotterdam"] },
+  { name: "AZ Alkmaar", players: ["毎熊晟矢"], aliases: ["AZ Alkmaar", "AZ"] },
   // ===== ジュピラー・プロ・リーグ =====
-  "Sint-Truidense",
-  "K Beerschot VA",
-  "Club Brugge",
-  "Anderlecht",
-  "Gent",
-  // ===== プリメイラ・リーガ =====
-  "Sporting CP",              // 守田英正
-  "Benfica",
-  "FC Porto",
-  "Braga",
-  // ===== トルコ・スュペル・リグ =====
-  "Trabzonspor",              // 鈴木唯人
-  "Galatasaray",
-  "Fenerbahce",
-  "Besiktas",
-  // ===== チャンピオンシップ（イングランド2部）=====
-  "Southampton",           // 松木玖生
-  "Leeds United",          // 田中碧
-  "QPR",                   // 斉藤光毅
-  "Coventry City",         // 坂元達裕
-  "Hull City",             // 平河悠
-  "Blackburn Rovers",      // 大橋祐紀・森下龍矢
-  "Stoke City",            // 瀬古樹
-  "Birmingham City",       // 岩田智輝・古橋亨梧・藤本寛也
+  { name: "Sint-Truiden VV", players: ["畑大雅", "高井幸大", "谷口彰悟", "小久保玲央ブライアン", "石渡ネルソン", "松澤海斗", "荒木遼太郎", "新川志音"], aliases: ["Sint-Truidense", "Sint-Truiden", "Sint-Truiden VV"] },
+  // ===== スコティッシュ・プレミアシップ =====
+  { name: "Celtic", players: ["旗手怜央", "前田大然"], aliases: ["Celtic"] },
+  { name: "Rangers", players: ["横田大祐"], aliases: ["Rangers"] },
+];
+
+/** クラブ名をソース横断で比較するための正規化。 */
+export function normalizeJapanesePlayerClubName(value: string): string {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/\b(?:football\s+club|afc|fc|cf|sc|ac|ssc|calcio)\b/g, " ")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+/** TheSportsDB / ESPN のチーム名を日本人選手所属クラブとして判定する。 */
+export function isJapanesePlayerTeam(teamName: string): boolean {
+  const normalized = normalizeJapanesePlayerClubName(teamName);
+  return JAPANESE_PLAYER_TEAMS.some(
+    (candidate) => normalizeJapanesePlayerClubName(candidate) === normalized,
+  );
+}
+
+/** 既存の同期コードとの互換用。クラブ別名を平坦化した一覧。 */
+export const JAPANESE_PLAYER_TEAMS: readonly string[] = [
+  ...Array.from(new Set(JAPANESE_PLAYER_CLUBS.flatMap((club) => club.aliases))),
 ];
