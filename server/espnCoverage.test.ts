@@ -3,6 +3,7 @@ import {
   ESPN_EURO_LEAGUE_BY_ID,
   ESPN_EURO_LEAGUES,
   buildEspnScoreboardUrl,
+  buildEspnScoreboardUrls,
 } from "../scripts/espnPremierLeague";
 
 describe("ESPN 2026-27大会カバレッジ", () => {
@@ -29,9 +30,15 @@ describe("ESPN 2026-27大会カバレッジ", () => {
   });
 
   it("対象大会ごとに2026-27シーズンの期間指定URLを生成する", () => {
-    const url = buildEspnScoreboardUrl(ESPN_EURO_LEAGUE_BY_ID.get("4480")!);
-    expect(url).toContain("uefa.champions");
-    expect(url).toContain("dates=20260801-20270531");
-    expect(url).toContain("limit=600");
+    const league = ESPN_EURO_LEAGUE_BY_ID.get("4480")!;
+    const urls = buildEspnScoreboardUrls(league);
+    expect(buildEspnScoreboardUrl(league)).toBe(urls[0]);
+    expect(urls).toHaveLength(2);
+    expect(urls.every((url) => url.includes("site.web.api.espn.com"))).toBe(true);
+    expect(urls).toEqual(expect.arrayContaining([
+      expect.stringContaining("uefa.champions/scoreboard?dates=2026"),
+      expect.stringContaining("uefa.champions/scoreboard?dates=2027"),
+    ]));
+    expect(urls.every((url) => url.includes("limit=600"))).toBe(true);
   });
 });

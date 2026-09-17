@@ -61,7 +61,110 @@ export const ESPN_EURO_LEAGUE_BY_ID = new Map(
 export const ESPN_PREMIER_LEAGUE_URL = buildEspnScoreboardUrl(ESPN_EURO_LEAGUES[0]!);
 
 export function buildEspnScoreboardUrl(league: EspnLeagueConfig): string {
-  return `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.espnLeagueCode}/scoreboard?dates=${league.startDate}-${league.endDate}&limit=600`;
+  return buildEspnScoreboardUrls(league)[0]!;
+}
+
+/**
+ * ESPNのsite.apiホストは環境により403となり、日付範囲クエリも400となることがある。
+ * 安定して年間日程を返すsite.web.apiを利用し、シーズンをまたぐため開始・終了年を別取得する。
+ */
+export function buildEspnScoreboardUrls(league: EspnLeagueConfig): string[] {
+  const startYear = league.startDate.slice(0, 4);
+  const endYear = league.endDate.slice(0, 4);
+  return [...new Set([startYear, endYear])].map((year) =>
+    `https://site.web.api.espn.com/apis/site/v2/sports/soccer/${league.espnLeagueCode}/scoreboard?dates=${year}&limit=600`,
+  );
+}
+
+export type DuplicateSourcePreference = "espn" | "fallback";
+
+export interface FixtureIdentityRecord {
+  eventId: string;
+  leagueId: string;
+  kickoffUtcMs: number;
+  homeTeam: string;
+  awayTeam: string;
+}
+
+/**
+ * 異なるデータソース間でチーム名の接尾辞・記号表記が異なる場合を吸収する。
+ * 例: "AFC Bournemouth" / "Bournemouth"、"Paris Saint-Germain" / "Paris Saint Germain"。
+ */
+export function normalizeFixtureTeamName(value: string): string {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/\b(?:football\s+club|afc|fc|cf|sc|ac|ssc|calcio)\b/g, " ")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+/** 同じ大会・キックオフ・対戦カードを同一試合として扱うためのキー。 */
+export function buildFixtureIdentity(record: FixtureIdentityRecord): string {
+  return [
+    record.leagueId,
+    Number(record.kickoffUtcMs),
+    normalizeFixtureTeamName(record.homeTeam),
+    normalizeFixtureTeamName(record.awayTeam),
+  ].join("|");
+}
+
+/**
+ * 同一試合として重複した行のうち、削除対象の eventId を返す。
+ * ESPN取得成功時はESPN行を優先し、ESPN障害時のTheSportsDBフォールバック後は
+ * 今回取得したフォールバック行を優先する。これにより両ソースを併記しない。
+ */
+export function selectDuplicateFixtureIds(
+  records: FixtureIdentityRecord[],
+  preferredSource: DuplicateSourcePreference,
+): string[] {
+  const groups = new Map<string, FixtureIdentityRecord[]>();
+  for (const record of records) {
+    const key = buildFixtureIdentity(record);
+    groups.set(key, [...(groups.get(key) ?? []), record]);
+  }
+
+  const eventIdsToDelete: string[] = [];
+  for (const candidates of groups.values()) {
+    if (candidates.length < 2) continue;
+    const preferred = candidates.find((candidate) => {
+      const isEspn = candidate.eventId.startsWith("espn_");
+      return preferredSource === "espn" ? isEspn : !isEspn;
+    });
+    const retainedId = preferred?.eventId ?? candidates[0]!.eventId;
+    eventIdsToDelete.push(...candidates
+      .filter((candidate) => candidate.eventId !== retainedId)
+      .map((candidate) => candidate.eventId));
+  }
+  return eventIdsToDelete;
+}
+
+/**
+ * ESPNとTheSportsDBのeventIdは異なるため、UPSERTだけでは同一カードが共存する。
+ * 大会単位で照合し、優先ソース以外の同一カードを削除する。
+ */
+export async function reconcileDuplicateFixtures(
+  db: Awaited<ReturnType<typeof getDb>>,
+  league: Pick<EspnLeagueConfig, "leagueId">,
+  preferredSource: DuplicateSourcePreference,
+): Promise<number> {
+  if (!db) return 0;
+  const rows = await db
+    .select({
+      eventId: matches.eventId,
+      leagueId: matches.leagueId,
+      kickoffUtcMs: matches.kickoffUtcMs,
+      homeTeam: matches.homeTeam,
+      awayTeam: matches.awayTeam,
+    })
+    .from(matches)
+    .where(eq(matches.leagueId, league.leagueId));
+  const eventIdsToDelete = selectDuplicateFixtureIds(rows, preferredSource);
+  for (const eventId of eventIdsToDelete) {
+    await db.delete(matches).where(eq(matches.eventId, eventId));
+  }
+  return eventIdsToDelete.length;
 }
 
 interface EspnTeam {
@@ -77,7 +180,7 @@ interface EspnCompetitor {
   score?: string | number | null;
 }
 
-interface EspnEvent {
+export interface EspnEvent {
   id?: string;
   date?: string;
   week?: { number?: number };
@@ -90,6 +193,29 @@ interface EspnEvent {
 
 interface EspnScoreboard {
   events?: EspnEvent[];
+}
+
+/** ESPN年別日程を結合し、対象シーズンの期間内にある公開済みカードだけを返す。 */
+export async function fetchEspnLeagueSchedule(league: EspnLeagueConfig): Promise<EspnEvent[]> {
+  const responses = await Promise.all(
+    buildEspnScoreboardUrls(league).map(async (url) => {
+      const response = await fetch(url, {
+        headers: { "User-Agent": "soccer-schedule-jp/1.0" },
+      });
+      if (!response.ok) throw new Error(`ESPN API HTTP ${response.status}`);
+      return (await response.json()) as EspnScoreboard;
+    }),
+  );
+
+  const startUtcMs = Date.parse(`${league.startDate.slice(0, 4)}-${league.startDate.slice(4, 6)}-${league.startDate.slice(6, 8)}T00:00:00.000Z`);
+  const endUtcMs = Date.parse(`${league.endDate.slice(0, 4)}-${league.endDate.slice(4, 6)}-${league.endDate.slice(6, 8)}T23:59:59.999Z`);
+  const eventsById = new Map<string, EspnEvent>();
+  for (const event of responses.flatMap((payload) => payload.events ?? [])) {
+    const kickoffUtcMs = event.date ? Date.parse(event.date) : Number.NaN;
+    if (!event.id || Number.isNaN(kickoffUtcMs) || kickoffUtcMs < startUtcMs || kickoffUtcMs > endUtcMs) continue;
+    eventsById.set(event.id, event);
+  }
+  return [...eventsById.values()].sort((a, b) => Date.parse(a.date ?? "") - Date.parse(b.date ?? ""));
 }
 
 function normalizedTeamName(value: string): string {
@@ -139,13 +265,12 @@ export async function syncEspnLeagueSchedule(
   const errors: string[] = [];
   if (!db) return { fetched: 0, upserted: 0, errors: ["DB接続なし"] };
 
-  const response = await fetch(buildEspnScoreboardUrl(league), {
-    headers: { "User-Agent": "soccer-schedule-jp/1.0" },
-  });
-  if (!response.ok) return { fetched: 0, upserted: 0, errors: [`ESPN API HTTP ${response.status}`] };
-
-  const payload = (await response.json()) as EspnScoreboard;
-  const events = payload.events ?? [];
+  let events: EspnEvent[];
+  try {
+    events = await fetchEspnLeagueSchedule(league);
+  } catch (error) {
+    return { fetched: 0, upserted: 0, errors: [(error as Error).message] };
+  }
   const countError = validateFixtureCount(league, events.length);
   if (countError) return { fetched: events.length, upserted: 0, errors: [countError] };
 

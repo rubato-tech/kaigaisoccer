@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { ESPN_PREMIER_LEAGUE_URL } from "../scripts/espnPremierLeague";
+import {
+  ESPN_EURO_LEAGUE_BY_ID,
+  fetchEspnLeagueSchedule,
+} from "../scripts/espnPremierLeague";
 
 type EspnFixture = {
   date?: string;
@@ -13,11 +16,7 @@ type EspnFixture = {
 
 describe("ESPN Premier League 2026-27 fixture source", () => {
   it("provides all 380 fixtures including the 23 August cards", async () => {
-    const response = await fetch(ESPN_PREMIER_LEAGUE_URL);
-    expect(response.ok).toBe(true);
-
-    const data = (await response.json()) as { events?: EspnFixture[] };
-    const events = data.events ?? [];
+    const events = await fetchEspnLeagueSchedule(ESPN_EURO_LEAGUE_BY_ID.get("4328")!) as EspnFixture[];
     expect(events).toHaveLength(380);
 
     const hasFixture = (home: string, away: string) => events.some((event) => {
@@ -29,5 +28,5 @@ describe("ESPN Premier League 2026-27 fixture source", () => {
 
     expect(hasFixture("Brighton & Hove Albion", "Aston Villa")).toBe(true);
     expect(hasFixture("Manchester City", "AFC Bournemouth")).toBe(true);
-  }, 15000);
+  }, 60000);
 });

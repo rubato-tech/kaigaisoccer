@@ -20,7 +20,11 @@ import { syncOneLeague } from "../server/syncMatches.js";
 import { getDb } from "../server/db.js";
 import { syncLog, matches } from "../drizzle/schema.js";
 import { eq, and } from "drizzle-orm";
-import { ESPN_EURO_LEAGUE_BY_ID, syncEspnLeagueSchedule } from "./espnPremierLeague.js";
+import {
+  ESPN_EURO_LEAGUE_BY_ID,
+  reconcileDuplicateFixtures,
+  syncEspnLeagueSchedule,
+} from "./espnPremierLeague.js";
 
 // 環境変数チェック
 if (!process.env.DATABASE_URL) {
@@ -406,6 +410,12 @@ if (!isWc2026Only) {
         if (result.errors.length > 0) {
           result.errors.forEach((entry) => console.warn("  [error] " + entry));
         }
+        if (espnSucceeded) {
+          const deleted = await reconcileDuplicateFixtures(db, espnLeague, "espn");
+          if (deleted > 0) {
+            console.log("[sync-direct] " + league.nameJp + ": ESPN優先で重複 " + deleted + " 件を整理");
+          }
+        }
       } catch (error) {
         const message = league.nameJp + " (ESPN): " + (error as Error).message;
         console.error("[sync-direct] ERROR: " + message);
@@ -419,6 +429,12 @@ if (!isWc2026Only) {
       totalFetched += result.fetched;
       totalUpserted += result.upserted;
       allErrors.push(...result.errors);
+      if (espnLeague) {
+        const deleted = await reconcileDuplicateFixtures(db, espnLeague, "fallback");
+        if (deleted > 0) {
+          console.log(`[sync-direct] ${league.nameJp}: フォールバック優先で重複 ${deleted} 件を整理`);
+        }
+      }
       console.log(
         `[sync-direct] ${league.nameJp}: fetched=${result.fetched} upserted=${result.upserted} errors=${result.errors.length}`,
       );

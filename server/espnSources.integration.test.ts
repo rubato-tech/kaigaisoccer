@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { ESPN_EURO_LEAGUES, buildEspnScoreboardUrl } from "../scripts/espnPremierLeague";
+import { ESPN_EURO_LEAGUES, fetchEspnLeagueSchedule } from "../scripts/espnPremierLeague";
 
 describe("ESPN公開日程ソース", () => {
   it("全優先同期対象が想定件数または同期下限を満たす", async () => {
     const results = await Promise.all(
       ESPN_EURO_LEAGUES.map(async (league) => {
-        const response = await fetch(buildEspnScoreboardUrl(league));
-        const data = (await response.json()) as { events?: unknown[] };
-        return { league, ok: response.ok, count: data.events?.length ?? 0 };
+        try {
+          const events = await fetchEspnLeagueSchedule(league);
+          return { league, ok: true, count: events.length };
+        } catch {
+          return { league, ok: false, count: 0 };
+        }
       }),
     );
 
@@ -20,5 +23,5 @@ describe("ESPN公開日程ソース", () => {
         expect(count, `${league.nameJp}: 公開済み日程件数`).toBeGreaterThanOrEqual(league.minimumFixtures);
       }
     }
-  }, 20000);
+  }, 60000);
 });
